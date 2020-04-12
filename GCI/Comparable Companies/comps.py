@@ -71,18 +71,30 @@ class Company:
         self.get_primary_data()
 
         # get EV/(Revenue TTM)
-        try:
-            self.ev_to_revenue = self.enterprise_value / self.revenue
+        if 'float' in str(type(self.enterprise_value)).lower():
+            try:
+                self.ev_to_revenue = self.enterprise_value / self.revenue
+            except ZeroDivisionError:
+                self.ev_to_revenue = '-'
 
             # get EV/(EBITDA TTM)
-            self.ev_to_ebitda = self.enterprise_value / self.ebitda
+            try:
+                self.ev_to_ebitda = self.enterprise_value / self.ebitda
+            except ZeroDivisionError:
+                self.ev_to_ebitda = '-'
 
             # get EV/(EBIT TTM)
-            self.ev_to_ebit = self.enterprise_value / self.ebit
+            try:
+                self.ev_to_ebit = self.enterprise_value / self.ebit
+            except ZeroDivisionError:
+                self.ev_to_ebit = '-'
 
             # get EV/(FCF TTM)
-            self.ev_to_fcf = self.enterprise_value / self.fcf
-        except TypeError:
+            try:
+                self.ev_to_fcf = self.enterprise_value / self.fcf
+            except ZeroDivisionError:
+                self.ev_to_fcf = '-'
+        else:
             self.ev_to_revenue = '-'
             self.ev_to_ebitda = '-'
             self.ev_to_ebit = '-'
