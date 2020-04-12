@@ -76,25 +76,30 @@ class Company:
                 self.ev_to_revenue = self.enterprise_value / self.revenue
             except ZeroDivisionError:
                 self.ev_to_revenue = '-'
+                print('EV to Revenue Not Found')
 
             # get EV/(EBITDA TTM)
             try:
                 self.ev_to_ebitda = self.enterprise_value / self.ebitda
             except ZeroDivisionError:
                 self.ev_to_ebitda = '-'
+                print('EV to EBITDA Not Found')
 
             # get EV/(EBIT TTM)
             try:
                 self.ev_to_ebit = self.enterprise_value / self.ebit
             except ZeroDivisionError:
                 self.ev_to_ebit = '-'
+                print('EV to EBIT Not Found')
 
             # get EV/(FCF TTM)
             try:
                 self.ev_to_fcf = self.enterprise_value / self.fcf
             except ZeroDivisionError:
                 self.ev_to_fcf = '-'
+                print('EV to FCF Not Found')
         else:
+            print('No Enterprise Value found')
             self.ev_to_revenue = '-'
             self.ev_to_ebitda = '-'
             self.ev_to_ebit = '-'
