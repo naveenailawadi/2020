@@ -71,17 +71,22 @@ class Company:
         self.get_primary_data()
 
         # get EV/(Revenue TTM)
-        self.ev_to_revenue = self.enterprise_value / self.revenue
+        try:
+            self.ev_to_revenue = self.enterprise_value / self.revenue
 
-        # get EV/(EBITDA TTM)
-        self.ev_to_ebitda = self.enterprise_value / self.ebitda
+            # get EV/(EBITDA TTM)
+            self.ev_to_ebitda = self.enterprise_value / self.ebitda
 
-        # get EV/(EBIT TTM)
-        self.ev_to_ebit = self.enterprise_value / self.ebit
+            # get EV/(EBIT TTM)
+            self.ev_to_ebit = self.enterprise_value / self.ebit
 
-        # get EV/(FCF TTM)
-        self.ev_to_fcf = self.enterprise_value / self.fcf
-
+            # get EV/(FCF TTM)
+            self.ev_to_fcf = self.enterprise_value / self.fcf
+        except TypeError:
+            self.ev_to_revenue = '-'
+            self.ev_to_ebitda = '-'
+            self.ev_to_ebit = '-'
+            self.ev_to_fcf = '-'
         # get p/e
         self.price_to_earnings = find_ratio_simple(gen_table, 'p/e')
 
