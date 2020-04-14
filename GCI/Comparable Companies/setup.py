@@ -18,7 +18,7 @@ except ImportError:
 try:
     import pandas
 except ImportError:
-    os.system('python3 -m pip install pandas')
+    os.system('python3 -m pip install pandas==0.25.3')
 
 try:
     import datetime
