@@ -194,6 +194,7 @@ def string_to_num(num_string):
     # make it easier to scan
     num_string = num_string.lower().replace(',', '')
     num_string = num_string.replace(' ', '')
+    num_string = num_string.replace('$', '')
 
     # convert to correct value
     if 't' in num_string:
