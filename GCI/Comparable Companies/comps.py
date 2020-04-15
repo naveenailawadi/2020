@@ -128,7 +128,10 @@ class Company:
             ends = tag.split('$')[1].split(' ')
         except IndexError:
             ends_list = tag.split(' ')
-            ends = ends_list[1] + ends_list[2]
+            if len(ends_list) == 1:
+                return 0
+            else:
+                ends = ends_list[1] + ends_list[2]
         value = ends[0]  # preferred stock value
         multiplier = ends[1][:1]
         value += multiplier
@@ -198,24 +201,37 @@ def string_to_num(num_string):
 
     # convert to correct value
     if 't' in num_string:
-        num = float(num_string.split('t')[0])
+        try:
+            num = float(num_string.split('t')[0])
+        except ValueError:
+            num = 0
         num *= 1000000000000.0
     elif 'b' in num_string:
-        num = float(num_string.split('b')[0])
+        try:
+            num = float(num_string.split('b')[0])
+        except ValueError:
+            num = 0
         num *= 1000000000.0
 
     elif 'm' in num_string:
-        num = float(num_string.split('m')[0])
+        try:
+            num = float(num_string.split('m')[0])
+        except ValueError:
+            num = 0
         num *= 1000000.0
 
     elif ('k' in num_string):
-        num = float(num_string.split('k')[0])
+        try:
+            num = float(num_string.split('k')[0])
+        except ValueError:
+            num = 0
         num *= 1000.0
     else:
         try:
             num = float(num_string)
         except ValueError:
-            num = "-"
+            print(f"Found: {num_string} (unable to convert to number)")
+            num = 0
 
     return num
 
