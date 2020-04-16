@@ -32,49 +32,98 @@ t_value <- function(value, mean, sd, population)
 
 
 # function for one sided p-value (the type parameter is whether you are computing z or p stats)
-print_p_os <- function(sample_proportion, old_proportion, sd, population, type)
+# can use NULL as sd if there is no given standard deviation
+# can use proportions or amounts
+print_p_os <- function(old_amount, sample_amount, sd, population, type)
 {
+
+  # convert proportions to amounts
+  if (sample_amount < 1) { sample_amount = sample_amount * population }
+  if (old_amount < 1) { old_amount = old_amount * population }
+  
   # make calculations
-  se = sd_mean(sd, population)
-  z = (sample_proportion - old_proportion) / se
+  if (length(sd) == 0)
+  {
+    sample = old_amount / population
+    
+    se = standard_deviation(sample, population)
+    
+    sd_new = se * population
+    
+    z = ((sample_amount / population) - (old_amount/population)) / se
+  }
+  else
+  {
+    se = sd_mean(sd, population)
+    z = (sample_amount - old_amount) / se
+  }
+  
 
   # handle p value for greater than and less than
-  if ('z' == type) { p = pnorm(-1 * z) }
+  if ('z' == type) { p = pnorm(-1 * abs(z)) }
   else if ('t' == type)
   {
-    t = t_value(sample_proportion, old_proportion, sd, population)
+    t = t_value(sample_amount, old_amount, sd, population)
     p = 1 - pt(t, population - 1)
   }
   else { return('Only use "z" or "t" as types') }
 
 
   # print the calculations and inputs
-  print("One-Sided Test")
-  print(sprintf("Old Proportion: %s", old_proportion))
-  print(sprintf("New Proportion: %s", sample_proportion))
-  print(sprintf("Population: %s", population))
+  cat("One-Sided Test\n")
+  cat(sprintf("Old Amount: %s\n", old_amount))
+  cat(sprintf("New Amount: %s\n", sample_amount))
+  if (length(sd) == 0) { cat(sprintf("Standard Deviation: %s\n", sd_new)) }
+  cat(sprintf("Population: %s\n", population))
 
   cat('\n')
 
   # print hypotheses
-  print(sprintf("Null Hypothesis: p = %s", old_proportion))
-  if (sample_proportion > old_proportion)
+  cat(sprintf("Null Hypothesis: p = %s\n", old_amount / population))
+  if (sample_amount > old_amount)
   {
-    print(sprintf("Alternative Hypothesis p > %s", old_proportion))
+    cat(sprintf("Alternative Hypothesis: p > %s\n", old_amount / population))
   }
   else
   {
-    print(sprintf("Alternative Hypothesis p < %s", old_proportion))
+    cat(sprintf("Alternative Hypothesis: p < %s\n", old_amount / population))
   }
 
   cat("\n")
 
-  print(sprintf("Standard Error: %s", se))
+  cat(sprintf("Standard Error: %s\n", se))
 
-  if ('z' == type) {print(sprintf("z-statistic: %s", z)) }
-  else if ('t' == type) { {print(sprintf("t-statistic: %s", z)) } }
+  if ('z' == type) {cat(sprintf("z-statistic: %s\n", z)) }
+  else if ('t' == type) { {cat(sprintf("t-statistic: %s\n", z)) } }
 
-  print(sprintf("P-value: %s", p))
+  cat(sprintf("P-value: %s", p))
+}
+
+
+confidence_interval <- function(old_amount, sample_amount, population, alpha)
+{
+  # convert proportions to amounts
+  if (sample_amount < 1) { sample_amount = sample_amount * population }
+  
+  sample = sample_amount / population
+  
+  se = standard_deviation(sample, population)
+  
+  # assume a 2-sided test
+  z = abs(qnorm(alpha/2))
+  
+  me = se * abs(z)
+  
+  lower = sample - me
+  
+  higher = sample + me
+  
+  cat(sprintf("z-score: %s\n", z))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
+  
 }
 
 
@@ -101,15 +150,18 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 
 
   se = sd_mean(sd, population)
+  
+  me = se * abs(t)
 
-  lower = mean - (se * abs(t))
+  lower = mean - me
 
-  higher = mean + (se * abs(t))
+  higher = mean + me
 
-  print(sprintf("t-value: %s", t))
-  print(sprintf("Standard Error: %s", se))
-  print(sprintf("Lower End: %s", lower))
-  print(sprintf("Higher End: %s", higher))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n"), lower)
+  cat(sprintf("Higher End: %s\n", higher))
 }
 
 
@@ -121,8 +173,8 @@ sample_sizer <- function(mean, current_sd, target_me, alpha, one_sided)
 
   population = (z * current_sd / target_me)**2
 
-  print(sprintf("z-statistic: %s", z))
-  print(sprintf("Sample size needed: %s", population))
+  cat(sprintf("z-statistic: %s\n", z))
+  cat(sprintf("Sample size needed: %s\n", population))
 }
 
 
@@ -166,10 +218,10 @@ t_value_diff_means <- function(array1, array2, delta)
 
   p = pt(-abs(t), df) * 2
 
-  print(sprintf("Degrees of Freedom: %s", df))
-  print(sprintf("Standard Error: %s", se))
-  print(sprintf("t-value: %s", t))
-  print(sprintf("P-value: %s", p))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("P-value: %s\n", p))
 
 }
 
@@ -194,16 +246,19 @@ mean_diff_confidence_intervals <- function(array1, array2, delta, alpha)
 
   # need to divide alpha for 2-sided test
   t = abs(qt(alpha/2, df))
+  
+  me = t * se
 
-  lower = diff - (t * se)
-  higher = diff + (t * se)
+  lower = diff - me
+  higher = diff + me
 
-  print(sprintf("Difference: %s", diff))
-  print(sprintf("Degrees of Freedom: %s", df))
-  print(sprintf("t-value: %s", t))
-  print(sprintf("Standard Error: %s", se))
-  print(sprintf("Lower End: %s", lower))
-  print(sprintf("Higher End: %s", higher))
+  cat(sprintf("Difference: %s\n", diff))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
 
 }
 
@@ -254,16 +309,19 @@ mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
 
   # need to divide alpha for 2-sided test
   t = abs(qt(alpha/2, df))
+  
+  me = t * se
 
-  lower = diff - (t * se)
-  higher = diff + (t * se)
+  lower = diff - me
+  higher = diff + me
 
-  print(sprintf("Difference: %s", diff))
-  print(sprintf("Degrees of Freedom: %s", df))
-  print(sprintf("t-value: %s", t))
-  print(sprintf("Standard Error: %s", se))
-  print(sprintf("Lower End: %s", lower))
-  print(sprintf("Higher End: %s", higher))
+  cat(sprintf("Difference: %s\n", diff))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
 
 }
 
@@ -287,10 +345,10 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delt
   lower = pairwise_differences - (t * se)
   higher = pairwise_differences + (t * se)
 
-  print(sprintf("t-value: %s", t))
-  print(sprintf("Standard Error: %s", se))
-  print(sprintf("Lower End: %s", lower))
-  print(sprintf("Higher End: %s", higher))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
 
 }
 
@@ -300,6 +358,7 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delt
 # get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
 # get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
 # get alpha from z-score --> pnorm(z-score)
+
 
 
 
