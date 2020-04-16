@@ -302,10 +302,5 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delt
 # get alpha from z-score --> pnorm(z-score)
 
 
-# Chapter 12
-# Exercises 2, 4, 6, 8, 10, 12, 14, 18, 20, 24, 28, 40, 46, 48.
-
-
-
 
 
