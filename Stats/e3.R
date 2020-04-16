@@ -54,7 +54,7 @@ print_p_os <- function(sample_proportion, old_proportion, sd, population, type)
   print(sprintf("New Proportion: %s", sample_proportion))
   print(sprintf("Population: %s", population))
 
-  print('\n')
+  cat('\n')
 
   # print hypotheses
   print(sprintf("Null Hypothesis: p = %s", old_proportion))
@@ -67,7 +67,7 @@ print_p_os <- function(sample_proportion, old_proportion, sd, population, type)
     print(sprintf("Alternative Hypothesis p < %s", old_proportion))
   }
 
-  print("\n")
+  cat("\n")
 
   print(sprintf("Standard Error: %s", se))
 
