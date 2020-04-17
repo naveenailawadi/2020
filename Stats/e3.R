@@ -238,7 +238,7 @@ mean_diff_confidence_intervals <- function(array1, array2, delta, alpha)
   sd2 = array2[2]
   n2 = array2[3]
 
-  diff = abs(mean1 - mean2)
+  diff = mean1 - mean2
 
   se = sd_diff_means(sd1, sd2, n1, n2)
 
@@ -332,9 +332,9 @@ mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
   sd2 = array2[2]
   n2 = array2[3]
 
-  diff = abs(mean1 - mean2)
+  diff = mean1 - mean2
 
-  se = sd_diff_means_pooled(sd1, sd2, n1, n2)
+  se = sd_pooled(sd1, sd2, n1, n2)
 
   df = df_pooled(n1, n2)
 
@@ -359,7 +359,7 @@ mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
 t_paired <- function(pairwise_differences, sd, population, delta)
 {
   # standard deviation for a paired t-value is the same as the standard deviation for 2 means
-  se = sd_means(sd, population)
+  se = sd_mean(sd, population)
 
   t = (pairwise_differences - delta) / se
 
@@ -380,7 +380,6 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delt
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Lower End: %s\n", lower))
   cat(sprintf("Higher End: %s\n", higher))
-
 }
 
 # other functions (built in)
