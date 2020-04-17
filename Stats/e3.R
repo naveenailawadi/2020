@@ -34,7 +34,7 @@ t_value <- function(value, mean, sd, population)
 # function for one sided p-value (the type parameter is whether you are computing z or p stats)
 # can use NULL as sd if there is no given standard deviation
 # can use proportions or amounts
-print_p_os <- function(old_amount, sample_amount, sd, population, type)
+p_os <- function(old_amount, sample_amount, sd, population, type)
 {
 
   # convert proportions to amounts
@@ -55,6 +55,8 @@ print_p_os <- function(old_amount, sample_amount, sd, population, type)
   else
   {
     se = sd_mean(sd, population)
+    
+    # this z is the same as a t-value for the same thing (se uses population)
     z = (sample_amount - old_amount) / se
   }
   
@@ -63,7 +65,7 @@ print_p_os <- function(old_amount, sample_amount, sd, population, type)
   if ('z' == type) { p = pnorm(-1 * abs(z)) }
   else if ('t' == type)
   {
-    t = t_value(sample_amount, old_amount, sd, population)
+    t = abs(t_value(sample_amount, old_amount, sd, population))
     p = 1 - pt(t, population - 1)
   }
   else { return('Only use "z" or "t" as types') }
@@ -79,14 +81,14 @@ print_p_os <- function(old_amount, sample_amount, sd, population, type)
   cat('\n')
 
   # print hypotheses
-  cat(sprintf("Null Hypothesis: p = %s\n", old_amount / population))
+  cat(sprintf("Null Hypothesis: p = %s\n", old_amount))
   if (sample_amount > old_amount)
   {
-    cat(sprintf("Alternative Hypothesis: p > %s\n", old_amount / population))
+    cat(sprintf("Alternative Hypothesis: p > %s\n", old_amount))
   }
   else
   {
-    cat(sprintf("Alternative Hypothesis: p < %s\n", old_amount / population))
+    cat(sprintf("Alternative Hypothesis: p < %s\n", old_amount))
   }
 
   cat("\n")
@@ -130,12 +132,19 @@ confidence_interval <- function(old_amount, sample_amount, population, alpha)
 # returns the difference in probability given a start and end value (not proportion)
 probdiff <- function(start, end, mean, sd, df)
 {
-  p_start = pt(t_value(start, mean, sd, df), df=df)
-  p_end = pt(t_value(end, mean, sd, df), df=df)
+  t1 = t_value(start, mean, sd, df)
+  t2 = t_value(end, mean, sd, df)
+  
+  p_start = pt(t1, df=df)
+  p_end = pt(t2, df=df)
 
-  pdiff = p_end - p_start
-
-  return(pdiff)
+  pdiff = abs(p_end - p_start)
+  
+  cat(sprintf("Start t-value: %s\n", t1))
+  cat(sprintf("Start Probability (below): %s\n\n", p_start))
+  cat(sprintf("End t-value (below): %s\n", t2))
+  cat(sprintf("End Probability (below): %s\n\n", p_end))
+  cat(sprintf("Probability Difference (between): %s\n", pdiff))
 
 }
 
@@ -145,13 +154,13 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 {
 
   # subtract 1 from population to get the correct t-value for computing the mean confidence interval
-  if (one_sided){ t = qt(alpha, population) }
-  else { t = qt(alpha / 2, population) }
+  if (one_sided){ t = abs(qt(alpha, population)) }
+  else { t = abs(qt(alpha / 2, population)) }
 
 
   se = sd_mean(sd, population)
   
-  me = se * abs(t)
+  me = se * t
 
   lower = mean - me
 
@@ -167,6 +176,7 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 
 sample_sizer <- function(mean, current_sd, target_me, alpha, one_sided)
 {
+  # using z-score because degrees of freedom are unknown --> can't use t-value
   if (one_sided) { z = qnorm(alpha) }
   else { z = qnorm(alpha/2) }
 
@@ -356,6 +366,7 @@ mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
 
 }
 
+
 t_paired <- function(pairwise_differences, sd, population, delta)
 {
   # standard deviation for a paired t-value is the same as the standard deviation for 2 means
@@ -366,9 +377,10 @@ t_paired <- function(pairwise_differences, sd, population, delta)
   return(t)
 }
 
-mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delta, population, alpha)
+
+mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd_differences, population, delta, alpha)
 {
-  se = sd_mean(sd, population)
+  se = sd_mean(sd_differences, population)
 
   # use n-1 for degrees of freedom
   t = abs(qt(alpha/2, population))
@@ -383,11 +395,15 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delt
 }
 
 # other functions (built in)
+
 # get t-value (from alpha and degrees of freedom) --> qt(alpha, df) --> 1-sided
-# qt(alpha/2, df) --> 2-sided
+#   qt(alpha/2, df) --> 2-sided
+
 # get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
 # get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
 # get alpha from z-score --> pnorm(z-score)
+# get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided", 
+#                                             conf.level = confidence, var.equal = T/F, paired = T/F)
 
 
 
