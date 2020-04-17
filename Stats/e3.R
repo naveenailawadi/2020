@@ -81,6 +81,8 @@ p_os <- function(old_amount, sample_amount, sd, population, type)
   cat('\n')
 
   # print hypotheses
+  
+  
   cat(sprintf("Null Hypothesis: p = %s\n", old_amount))
   if (sample_amount > old_amount)
   {
@@ -96,13 +98,13 @@ p_os <- function(old_amount, sample_amount, sd, population, type)
   cat(sprintf("Standard Error: %s\n", se))
 
   if ('z' == type) {cat(sprintf("z-statistic: %s\n", z)) }
-  else if ('t' == type) { {cat(sprintf("t-statistic: %s\n", z)) } }
-
+  else if ('t' == type) { cat(sprintf("t-statistic: %s\n", z)) }
+  
   cat(sprintf("P-value: %s", p))
 }
 
 
-confidence_interval <- function(old_amount, sample_amount, population, alpha)
+confidence_interval <- function(sample_amount, population, alpha)
 {
   # convert proportions to amounts
   if (sample_amount < 1) { sample_amount = sample_amount * population }
@@ -147,7 +149,6 @@ probdiff <- function(start, end, mean, sd, df)
   cat(sprintf("Probability Difference (between): %s\n", pdiff))
 
 }
-
 
 # create a function to get the confidence interval (handles for one-sided or not)
 mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
@@ -237,7 +238,7 @@ t_value_diff_means <- function(array1, array2, delta)
 
 # find confidence intervals for a difference of means
 # array format: c(mean, sd, population)
-mean_diff_confidence_intervals <- function(array1, array2, delta, alpha)
+mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
 {
   # unpack the arrays
   mean1 = array1[1]
@@ -331,7 +332,7 @@ t_pooled <- function(array1, array2, delta)
 
 
 # array format: c(mean, sd, population)
-mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
+mean_diff_confidence_interval_pooled <- function(array1, array2, delta, alpha)
 {
   # unpack the arrays
   mean1 = array1[1]
@@ -401,7 +402,7 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd_diffe
 
 # get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
 # get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
-# get alpha from z-score --> pnorm(z-score)
+# get p-value from z-score --> pnorm(z-score)
 # get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided", 
 #                                             conf.level = confidence, var.equal = T/F, paired = T/F)
 
