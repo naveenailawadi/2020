@@ -368,7 +368,7 @@ t_paired <- function(pairwise_differences, sd, population, delta)
 
 mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd, delta, population, alpha)
 {
-  se = sd_means(sd, population)
+  se = sd_mean(sd, population)
 
   # use n-1 for degrees of freedom
   t = abs(qt(alpha/2, population))
