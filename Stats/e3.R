@@ -291,7 +291,8 @@ sd_diff_means_pooled <- function(sd1, sd2, n1, n2)
 }
 
 
-t_pooled <- function(array1, array2, n2)
+# array format: c(mean, sd, population)
+t_pooled <- function(array1, array2, delta)
 {
   # unpack the arrays
   mean1 = array1[1]
@@ -302,11 +303,11 @@ t_pooled <- function(array1, array2, n2)
   sd2 = array2[2]
   n2 = array2[3]
   
-  se = sd_diff_means_pooled(sd1, sd2, n1, n2)
+  se = sd_pooled(sd1, sd2, n1, n2)
   
   t = (mean1 - mean2 - delta) / se
   
-  df = diff_df(n1, n2, sd1, sd2, se)
+  df = df_pooled(n1, n2)
   
   p = pt(-abs(t), df) * 2
   
@@ -319,6 +320,7 @@ t_pooled <- function(array1, array2, n2)
 }
 
 
+# array format: c(mean, sd, population)
 mean_diff_confidence_intervals_pooled <- function(array1, array2, delta, alpha)
 {
   # unpack the arrays
