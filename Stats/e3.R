@@ -280,6 +280,7 @@ sd_pooled <- function(sd1, sd2, n1, n2)
   return(s)
 }
 
+
 sd_diff_means_pooled <- function(sd1, sd2, n1, n2)
 {
   sd_pooled = sd_pooled(sd1, sd2, n1, n2)
@@ -287,6 +288,34 @@ sd_diff_means_pooled <- function(sd1, sd2, n1, n2)
   se = sd_pooled * sqrt((1/n1) + (1/n2))
 
   return(se)
+}
+
+
+t_pooled <- function(array1, array2, n2)
+{
+  # unpack the arrays
+  mean1 = array1[1]
+  sd1 = array1[2]
+  n1 = array1[3]
+  
+  mean2 = array2[1]
+  sd2 = array2[2]
+  n2 = array2[3]
+  
+  se = sd_diff_means_pooled(sd1, sd2, n1, n2)
+  
+  t = (mean1 - mean2 - delta) / se
+  
+  df = diff_df(n1, n2, sd1, sd2, se)
+  
+  p = pt(-abs(t), df) * 2
+  
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("P-value: %s\n", p))
+  
+  return(t)
 }
 
 
