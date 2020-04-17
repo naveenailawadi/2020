@@ -160,7 +160,7 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
   cat(sprintf("t-value: %s\n", t))
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Margin of Error: %s\n", me))
-  cat(sprintf("Lower End: %s\n"), lower)
+  cat(sprintf("Lower End: %s\n", lower))
   cat(sprintf("Higher End: %s\n", higher))
 }
 
