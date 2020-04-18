@@ -157,7 +157,7 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
   # subtract 1 from population to get the correct t-value for computing the mean confidence interval
   if (one_sided){ t = abs(qt(alpha, population)) }
   else { t = abs(qt(alpha / 2, population)) }
-
+  
 
   se = sd_mean(sd, population)
   
@@ -166,8 +166,11 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
   lower = mean - me
 
   higher = mean + me
+  
+  p = 1 - pt(t, population - 1)
 
   cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("P-value: %s\n", p))
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Margin of Error: %s\n", me))
   cat(sprintf("Lower End: %s\n", lower))
@@ -175,14 +178,22 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 }
 
 
-sample_sizer <- function(mean, current_sd, target_me, alpha, one_sided)
+# use NULL as current_sd if there none is provided --> will use standard
+# of 0.5 for sample proportion
+sample_sizer <- function(current_sd, target_me, alpha, one_sided)
 {
   # using z-score because degrees of freedom are unknown --> can't use t-value
   if (one_sided) { z = qnorm(alpha) }
   else { z = qnorm(alpha/2) }
 
-
-  population = (z * current_sd / target_me)**2
+  if (length(current_sd) == 0)
+  {
+    population = ((z / target_me)**2) * 0.25
+  }
+  else
+  {
+    population = (z * current_sd / target_me)**2 
+  }
 
   cat(sprintf("z-statistic: %s\n", z))
   cat(sprintf("Sample size needed: %s\n", population))
