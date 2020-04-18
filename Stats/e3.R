@@ -40,26 +40,26 @@ p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
   # convert proportions to amounts
   if (sample_amount < 1) { sample_amount = sample_amount * population }
   if (old_amount < 1) { old_amount = old_amount * population }
-  
+
   # make calculations
   if (length(sd) == 0)
   {
     sample = old_amount / population
-    
+
     se = standard_deviation(sample, population)
-    
+
     sd_new = se * population
-    
+
     z = ((sample_amount / population) - (old_amount/population)) / se
   }
   else
   {
     se = sd_mean(sd, population)
-    
+
     # this z is the same as a t-value for the same thing (se uses population)
     z = (sample_amount - old_amount) / se
   }
-  
+
 
   # handle p value for greater than and less than
   if ('z' == type) { p = pnorm(-1 * abs(z)) }
@@ -69,7 +69,7 @@ p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
     p = 1 - pt(t, population - 1)
   }
   else { return('Only use "z" or "t" as types') }
-  
+
   if (! one_sided) { p = 2 * p}
 
 
@@ -82,8 +82,8 @@ p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
   cat('\n')
 
   # print hypotheses
-  
-  
+
+
   cat(sprintf("Null Hypothesis: p = %s\n", old_amount))
   if (! one_sided)
   {
@@ -104,7 +104,7 @@ p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
 
   if ('z' == type) {cat(sprintf("z-statistic: %s\n", z)) }
   else if ('t' == type) { cat(sprintf("t-statistic: %s\n", z)) }
-  
+
   cat(sprintf("P-value: %s", p))
 }
 
@@ -113,26 +113,26 @@ confidence_interval <- function(sample_amount, population, alpha)
 {
   # convert proportions to amounts
   if (sample_amount < 1) { sample_amount = sample_amount * population }
-  
+
   sample = sample_amount / population
-  
+
   se = standard_deviation(sample, population)
-  
+
   # assume a 2-sided test
   z = abs(qnorm(alpha/2))
-  
+
   me = se * abs(z)
-  
+
   lower = sample - me
-  
+
   higher = sample + me
-  
-  cat(sprintf("z-score: %s\n", z))
+
   cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("z-score: %s\n", z))
   cat(sprintf("Margin of Error: %s\n", me))
   cat(sprintf("Lower End: %s\n", lower))
   cat(sprintf("Higher End: %s\n", higher))
-  
+
 }
 
 
@@ -141,12 +141,12 @@ probdiff <- function(start, end, mean, sd, df)
 {
   t1 = t_value(start, mean, sd, df)
   t2 = t_value(end, mean, sd, df)
-  
+
   p_start = pt(t1, df=df)
   p_end = pt(t2, df=df)
 
   pdiff = abs(p_end - p_start)
-  
+
   cat(sprintf("Start t-value: %s\n", t1))
   cat(sprintf("Start Probability (below): %s\n\n", p_start))
   cat(sprintf("End t-value (below): %s\n", t2))
@@ -160,19 +160,26 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 {
 
   # subtract 1 from population to get the correct t-value for computing the mean confidence interval
-  if (one_sided){ t = abs(qt(alpha, population)) }
-  else { t = abs(qt(alpha / 2, population)) }
-  
+  if (one_sided)
+  {
+    t = abs(qt(alpha, population - 1))
+    p = 1 - pt(t, population - 1)
+  }
+  else
+  {
+    t = abs(qt(alpha / 2, population - 1))
+    p = 1 - pt(t, population - 1)
+    p = 2 * p
+  }
+
 
   se = sd_mean(sd, population)
-  
+
   me = se * t
 
   lower = mean - me
 
   higher = mean + me
-  
-  p = 1 - pt(t, population - 1)
 
   cat(sprintf("t-value: %s\n", t))
   cat(sprintf("P-value: %s\n", p))
@@ -197,7 +204,7 @@ sample_sizer <- function(current_sd, target_me, alpha, one_sided)
   }
   else
   {
-    population = (z * current_sd / target_me)**2 
+    population = (z * current_sd / target_me)**2
   }
 
   cat(sprintf("z-statistic: %s\n", z))
@@ -273,7 +280,7 @@ mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
 
   # need to divide alpha for 2-sided test
   t = abs(qt(alpha/2, df))
-  
+
   me = t * se
 
   lower = diff - me
@@ -325,24 +332,24 @@ t_pooled <- function(array1, array2, delta)
   mean1 = array1[1]
   sd1 = array1[2]
   n1 = array1[3]
-  
+
   mean2 = array2[1]
   sd2 = array2[2]
   n2 = array2[3]
-  
+
   se = sd_pooled(sd1, sd2, n1, n2)
-  
+
   t = (mean1 - mean2 - delta) / se
-  
+
   df = df_pooled(n1, n2)
-  
+
   p = pt(-abs(t), df) * 2
-  
+
   cat(sprintf("Degrees of Freedom: %s\n", df))
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("t-value: %s\n", t))
   cat(sprintf("P-value: %s\n", p))
-  
+
   return(t)
 }
 
@@ -367,7 +374,7 @@ mean_diff_confidence_interval_pooled <- function(array1, array2, delta, alpha)
 
   # need to divide alpha for 2-sided test
   t = abs(qt(alpha/2, df))
-  
+
   me = t * se
 
   lower = diff - me
@@ -419,7 +426,7 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd_diffe
 # get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
 # get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
 # get p-value from z-score --> pnorm(z-score)
-# get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided", 
+# get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided",
 #                                             conf.level = confidence, var.equal = T/F, paired = T/F)
 
 
