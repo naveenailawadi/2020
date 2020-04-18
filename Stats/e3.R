@@ -34,7 +34,7 @@ t_value <- function(value, mean, sd, population)
 # function for one sided p-value (the type parameter is whether you are computing z or p stats)
 # can use NULL as sd if there is no given standard deviation
 # can use proportions or amounts
-p_os <- function(old_amount, sample_amount, sd, population, type)
+p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
 {
 
   # convert proportions to amounts
@@ -69,10 +69,11 @@ p_os <- function(old_amount, sample_amount, sd, population, type)
     p = 1 - pt(t, population - 1)
   }
   else { return('Only use "z" or "t" as types') }
+  
+  if (! one_sided) { p = 2 * p}
 
 
   # print the calculations and inputs
-  cat("One-Sided Test\n")
   cat(sprintf("Old Amount: %s\n", old_amount))
   cat(sprintf("New Amount: %s\n", sample_amount))
   if (length(sd) == 0) { cat(sprintf("Standard Deviation: %s\n", sd_new)) }
@@ -84,7 +85,11 @@ p_os <- function(old_amount, sample_amount, sd, population, type)
   
   
   cat(sprintf("Null Hypothesis: p = %s\n", old_amount))
-  if (sample_amount > old_amount)
+  if (! one_sided)
+  {
+    cat(sprintf("Alternative Hypothesis: p != %s\n", old_amount))
+  }
+  else if (sample_amount > old_amount)
   {
     cat(sprintf("Alternative Hypothesis: p > %s\n", old_amount))
   }
