@@ -49,6 +49,8 @@ class MonetaryRule:
         return taylor_rate
 
 
+# autonomous spending multiplier --> amount of autonomous spending that changes with 1 point
+# change in r
 class AggregateDemand(SpendingBalanceModel):
     def __init__(self,
                  spending_multiplier, autonomous_spending_multiplier,
@@ -91,8 +93,9 @@ class AggregateDemand(SpendingBalanceModel):
         return slope
 
     def gdp_from_inflation(self, inflation):
-        inflation_difference = self.sample_inflation - inflation
+        inflation_difference = inflation - self.sample_inflation
         gdp_difference = inflation_difference / self.slope
+
         gdp = self.sample_gdp + gdp_difference
 
         return gdp
@@ -100,7 +103,7 @@ class AggregateDemand(SpendingBalanceModel):
     def inflation_from_gdp(self, gdp):
         gdp_difference = gdp - self.sample_gdp
 
-        inflation_difference = self.sample_inflation + gdp_difference * self.slope
+        inflation_difference = gdp_difference * self.slope
 
         inflation = self.sample_inflation + inflation_difference
 
