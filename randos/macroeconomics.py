@@ -10,9 +10,12 @@ class SpendingBalanceModel:
 
         return consumption
 
-    def find_average_propensity_to_consume(self, income, autonomous_spending):
-        consumption = self.find_consumption(autonomous_spending)
-        average_propensity_to_consume = consumption / income
+    def find_average_propensity_to_consume(self, autonomous_spending, gdp):
+        # average propensity to consume equals C/Y.
+        # this consumption does NOT rely on the keynesian cross --> use an equation
+        consumption = autonomous_spending + self.marginal_propensity_to_consume * gdp
+
+        average_propensity_to_consume = consumption / gdp
 
         return average_propensity_to_consume
 
@@ -57,11 +60,9 @@ class AggregateDemand(SpendingBalanceModel):
                  interest_rate_inflation_ratio, interest_rate_without_inflation,
                  sample_inflation, sample_gdp):
 
-        marginal_propensity_to_consume = 1 - (1 / autonomous_spending_multiplier)
-
-        self.marginal_propensity_to_consume = marginal_propensity_to_consume
+        self.marginal_propensity_to_consume = 1 - (1 / spending_multiplier)
         self.spending_multiplier = spending_multiplier
-        self.autonomous_spending_multiplier = autonomous_spending_multiplier
+        self.autonomous_spending_multiplier = abs(autonomous_spending_multiplier)
         self.interest_rate_inflation_ratio = interest_rate_inflation_ratio
         self.interest_rate_without_inflation = interest_rate_without_inflation
         self.sample_inflation = sample_inflation
