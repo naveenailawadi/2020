@@ -114,7 +114,7 @@ t_value <- function(value, mean, sd, population)
 }
 
 
-# function for one sided p-value (the type parameter is whether you are computing z or p stats)
+# function for finding a p-value (the type parameter is whether you are computing z or p stats)
 # can use NULL as sd if there is no given standard deviation
 # can use proportions or amounts
 p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
@@ -220,7 +220,7 @@ confidence_interval <- function(sample_amount, population, alpha)
 
 
 # returns the difference in probability given a start and end value (not proportion)
-probdiff <- function(start, end, mean, sd, df)
+prob_diff <- function(start, end, mean, sd, df)
 {
   t1 = t_value(start, mean, sd, df)
   t2 = t_value(end, mean, sd, df)
@@ -295,6 +295,8 @@ sample_sizer <- function(current_sd, target_me, alpha, one_sided)
 }
 
 
+
+# functions for comparing means
 sd_diff_means <- function(sd1, sd2, n1, n2)
 {
   var1 = (sd1**2) / n1
@@ -342,6 +344,37 @@ t_value_diff_means <- function(array1, array2, delta)
   
 }
 
+# function for finding a p-value of different means (the type parameter is whether you are computing z or p stats)
+p_value_diff_means <- function(array1, array2, delta)
+{
+  # unpack the arrays
+  mean1 = array1[1]
+  sd1 = array1[2]
+  n1 = array1[3]
+  
+  mean2 = array2[1]
+  sd2 = array2[2]
+  n2 = array2[3]
+  
+  # create some preliminary information to use in calculations
+  se = sd_diff_means(sd1, sd2, n1, n2)
+  df = diff_df(n1, n2, sd1, sd2, se)
+  
+  t = (mean1 - mean2) / se
+  
+  p = 2 * (1 - pt(t, df))
+  
+  cat(sprintf("Null Hypothesis: %s = %s\n", mean1, mean2))
+  cat(sprintf("Alternative Hypothesis: %s != %s\n", mean1, mean2))
+  
+  cat(sprintf("Mean Difference: %s\n", (mean1 - mean2)))
+  cat(sprintf("Standard Error: %s\n", se))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("P-value: %s\n", p))
+}
+
 # find confidence intervals for a difference of means
 # array format: c(mean, sd, population)
 mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
@@ -369,9 +402,12 @@ mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
   lower = diff - me
   higher = diff + me
   
+  p = 1 - pt(t, population - 1)
+  
   cat(sprintf("Difference: %s\n", diff))
   cat(sprintf("Degrees of Freedom: %s\n", df))
   cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("P-value: %s", p))
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Margin of Error: %s\n", me))
   cat(sprintf("Lower End: %s\n", lower))
