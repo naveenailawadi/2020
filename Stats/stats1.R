@@ -293,6 +293,19 @@ sample_sizer <- function(current_sd, target_me, alpha, one_sided)
   cat(sprintf("z-statistic: %s\n", z))
   cat(sprintf("Sample size needed: %s\n", population))
 }
+# other functions (built in) that deal with standardization
+
+# get t-value (from alpha and degrees of freedom) --> qt(alpha, df) --> 1-sided
+#   qt(alpha/2, df) --> 2-sided
+
+# get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
+# get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
+# get p-value from z-score --> pnorm(z-score)
+# get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided",
+#                                             conf.level = confidence, var.equal = T/F, paired = T/F)
+
+
+
 
 
 
@@ -402,7 +415,7 @@ mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
   lower = diff - me
   higher = diff + me
   
-  p = 1 - pt(t, population - 1)
+  p = 1 - pt(t, df)
   
   cat(sprintf("Difference: %s\n", diff))
   cat(sprintf("Degrees of Freedom: %s\n", df))
@@ -426,6 +439,7 @@ df_pooled <- function(n1, n2)
 
 sd_pooled <- function(sd1, sd2, n1, n2)
 {
+
   s_squared = ( ( (n1 - 1) * sd1**2 ) + ( (n2 - 1) * sd2**2 ) ) / (df_pooled(n1, n2))
   
   s = sqrt(s_squared)
@@ -537,16 +551,178 @@ mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd_diffe
   cat(sprintf("Higher End: %s\n", higher))
 }
 
-# other functions (built in)
 
-# get t-value (from alpha and degrees of freedom) --> qt(alpha, df) --> 1-sided
-#   qt(alpha/2, df) --> 2-sided
 
-# get the p-value from a t-value and degrees of freedom --> pt(t-value, df)
-# get the z-score from an alpha value --> qnorm(alpha) ** make sure to divide by 2 if a 2-sided test
-# get p-value from z-score --> pnorm(z-score)
-# get confidence interval from array --> t.test(array1, array2, alternative="one.sided/two.sided",
-#                                             conf.level = confidence, var.equal = T/F, paired = T/F)
+
+# functions for linear regression
+correlation_coefficient_linear <- function(preidictor_array, response_array)
+{
+ combined_array = preidictor_array * response_array
+ 
+ r = sum(combined_array) / (n - 1)
+ 
+ return(r)
+}
+
+
+# uses a set linear model with a predictor (just fancy use of a line)
+run_linear <- function(intercept, slope, predictor)
+{
+  response = intercept + slope*predictor
+  
+  return(response)
+}
+
+slope_linear <- function(sd_predictor, sd_response, correlation_coefficient)
+{
+  slope = correlation_coefficient * (sd_response / sd_predictor)
+  
+  return(slope)
+}
+
+
+# finds the standard deviation of the residuals from an array of them
+sd_linear_residuals <- function(residual_array)
+{
+  sum = sum(residual_array**2)
+  
+  sd = sqrt(sum / 2)
+  
+  return(sd)
+}
+
+
+sd_linear <- function(actual_reponse_array, predicted_response_array)
+{
+  residuals = actual_reponse_array - predicted_response_array
+  
+  sd = sd_linear_residuals(residuals)
+  
+  return(sd)
+}
+
+
+# finds the equation of a line for a linear model
+linear_mean_model <- function(mean_predictor, mean_response, sd_predictor, sd_response, correlation_coefficient)
+{
+  # find the attributes of the line
+  slope = slope_linear(sd_predictor, sd_response, correlation_coefficient)
+  intercept = mean_response  - slope * mean_predictor
+
+  
+  # output the line's equation
+  cat(sprintf("y = %s + %sx\n", intercept, slope))
+}
+
+
+
+sd_linear_slope <- function(sd_response, sd_spread, sample_size)
+{
+  sd = sd_response / (sd_spread * sqrt(sample_size - 1) )
+  
+  return(sd)
+}
+
+t_value_correlation_coefficient <- function(r, population)
+{
+  df = population - 2
+  
+  t = r * sqrt(df / (1 - r**2))
+  
+  return(t)
+}
+
+
+# create a standard deviation function for an entire linear model (for all values at a point)
+sd_linear_model_all <- function(predictor, mean_predictor, sd_intercept, sd_spread, population)
+{
+  var_intercept = sd_intercept**2
+  var_spread = sd_spread**2
+  
+  sd = sqrt(var_intercept * ((predictor-mean_predictor)**2) + (var_spread/population))
+  
+  return(sd)
+}
+
+
+
+# create a standard deviation function for an entire linear model (for any one value)
+sd_linear_model_single <- function(predictor, mean_predictor, sd_intercept, sd_spread, population)
+{
+  var_intercept = sd_intercept**2
+  var_spread = sd_spread**2
+  
+  sd = sqrt(var_intercept * ((predictor-mean_predictor)**2) + (var_spread/population) + var_spread)
+  
+  return(sd)
+}
+
+
+
+# create a function to calculate the confidence interval of a linear regression model for
+# all values at a particular point
+confidence_interval_linear_all <- function(intercept, slope, predictor, 
+                                       mean_predictor, sd_intercept, sd_spread, population, alpha)
+{
+  prediction = run_linear(intercept, slope, predictor)
+  
+  sd = sd_linear_model_all(predictor, mean_predictor, sd_intercept, sd_spread, population)
+  
+  # need to divide alpha for 2-sided test
+  df = population - 2
+  t = abs(qt(alpha/2, df))
+  
+  # calculate some output stats
+  diff = predictor - mean_predictor
+  
+  me = sd * t
+  
+  lower = prediction - me
+  higher = prediction + me
+  
+  cat(sprintf("Difference from mean: %s\n", diff))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Standard Error: %s\n", sd))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
+}
+
+
+
+# create a function that gives a confidence interval for one particular input
+confidence_interval_linear_single <- function(intercept, slope, predictor, 
+                                           mean_predictor, sd_intercept, sd_spread, population, alpha)
+{
+  prediction = run_linear(intercept, slope, predictor)
+  
+  sd = sd_linear_model_single(predictor, mean_predictor, sd_intercept, sd_spread, population)
+  
+  # need to divide alpha for 2-sided test
+  df = population - 2
+  t = abs(qt(alpha/2, df))
+  
+  # calculate some output stats
+  diff = predictor - mean_predictor
+  
+  me = sd * t
+  
+  lower = prediction - me
+  higher = prediction + me
+  
+  cat(sprintf("Difference from mean: %s\n", diff))
+  cat(sprintf("Degrees of Freedom: %s\n", df))
+  cat(sprintf("t-value: %s\n", t))
+  cat(sprintf("Standard Error: %s\n", sd))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
+}
+
+
+
+
 
 
 
