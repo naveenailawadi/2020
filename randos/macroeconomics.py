@@ -1,5 +1,9 @@
 class SpendingBalanceModel:
     def __init__(self, marginal_propensity_to_consume):
+        # convert a spending multiplier back to an mpc if used as an input
+        if marginal_propensity_to_consume > 1:
+            marginal_propensity_to_consume = 1 - (1 / marginal_propensity_to_consume)
+
         self.marginal_propensity_to_consume = marginal_propensity_to_consume
 
         # spending multiplier --> how much GDP increases with an increase in autonomous spending
