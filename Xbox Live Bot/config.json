@@ -1,5 +1,5 @@
 {
-    "email": "jaiailawadi@gmail.com",
-    "password": "Naveen.1",
-    "max_recents": 10
+    "email": "<your email>",
+    "password": "<your password>",
+    "max_recents": <some number>
 }
