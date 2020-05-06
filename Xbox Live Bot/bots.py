@@ -1,11 +1,18 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+from xbox.webapi.api.client import XboxLiveClient
+from xbox.webapi.authentication.manager import AuthenticationManager
+from xbox.webapi.api.provider.profile import ProfileProvider
+from xbox.webapi.common.exceptions import AuthenticationException
+from xboxapi.client import Client
+import requests
 import time
 
 LOGIN = 'https://login.live.com/login.srf'
 XBOX_SITE = 'https://account.xbox.com/en-US/social?xr=shellnav'
 XBOX_HOME = 'https://www.xbox.com/en-US/'
+MESSAGING_URL = 'https://account.xbox.com/en-us/SkypeMessages'
 
 
 class RecentScraper:
@@ -69,7 +76,46 @@ class RecentScraper:
 
         return recents
 
-    def scrape(self, max_recents):
+    def send_message(self, gamertag, message):
+        # click the correct account
+        try:
+            account = self.driver.find_element_by_xpath(f'//strong[@class="topic"][text()="{gamertag}"]')
+        except NoSuchElementException:
+            print(f"Unable to send message to {gamertag} (account not found)")
+            return False
+        account.click()
+        time.sleep(3)
+
+        # send the message to the message bar
+        message_bar = self.driver.find_element_by_xpath('//input[@id="newmessageinput"]')
+        message_bar.send_keys(message)
+
+        # click send
+        send_button = self.driver.find_element_by_xpath('//button[@id="newmessage"]')
+        send_button.click()
+        time.sleep(1)
+
+        print(f"Message sent to {gamertag}")
+        return True
+
+    def send_messages(self, gamertags, message):
+        # navigate to the xbox home
+        self.driver.get(MESSAGING_URL)
+        time.sleep(5)
+
+        # for testing only
+        gamertags = ['LaxShaan04']
+
+        messaged_gamers = []
+
+        for gamer in gamertags:
+            sent = self.send_message(gamer, message)
+            if sent:
+                messaged_gamers.append(gamer)
+
+        return messaged_gamers
+
+    def scrape_and_send(self, max_recents, message):
         self.create_webdriver()
 
         self.login()
@@ -78,9 +124,90 @@ class RecentScraper:
 
         recents = self.get_recents(max_recents)
 
+        messaged_gamers = self.send_messages(recents, message)
+
         self.close_webdriver()
 
-        return recents
+        return messaged_gamers
 
     def close_webdriver(self):
         self.driver.close()
+
+
+# this class will work when microsoft fixes this endpoint
+class MicrosoftMessenger:
+    def __init__(self, email, password):
+        self.auth_mgr = AuthenticationManager()
+
+        # set data for auth manager
+        self.auth_mgr.email_address = email
+        self.auth_mgr.password = password
+
+        # authentication
+        self.auth_mgr.authenticate(do_refresh=True)
+
+        # set the new info to a xbl client
+        self.xbl_client = XboxLiveClient(
+            self.auth_mgr.userinfo.userhash, self.auth_mgr.xsts_token.jwt, self.auth_mgr.userinfo.xuid)
+
+    # sends message to list of multiple users
+    def send_message(self, message, users):
+        response = self.xbl_client.message.send_message(message, gamertags=users)
+
+        return response
+
+
+# create a class that uses the third party API to send messages
+class XMessenger:
+    def __init__(self, email, password, x_auth_key):
+        self.x_auth_key = x_auth_key
+        self.url = 'http://xapi.us/v2'
+        self.client = Client(api_key=x_auth_key)
+
+        # use the microsoft api to get the xuid info without using requests
+        self.auth_mgr = AuthenticationManager()
+
+        # set data for auth manager
+        self.auth_mgr.email_address = email
+        self.auth_mgr.password = password
+
+        # authentication
+        self.auth_mgr.authenticate(do_refresh=True)
+
+        # set the new info to a xbl client
+        self.xbl_client = XboxLiveClient(
+            self.auth_mgr.userinfo.userhash, self.auth_mgr.xsts_token.jwt, self.auth_mgr.userinfo.xuid)
+
+        self.profile_provider = ProfileProvider(self.xbl_client)
+
+    def send_messages_url(self, gamertags, message):
+        endpoint = f"{self.url}/messages"
+        headers = {
+            'X-Auth': self.x_auth_key,
+            'Content-Type': 'application/json'
+        }
+
+        # convert the gamertags to xuids
+        xuids = [self.get_xuid(gamertag) for gamertag in gamertags]
+
+        body = {
+            "to": xuids,
+            "message": message
+        }
+
+        response = requests.post(url=endpoint, data=body, headers=headers)
+
+        return response
+
+    def send_message(self, gamertag, message):
+        # create a game object
+        gamer = self.client.gamer(gamertag)
+
+        # send the message
+        gamer.send_message(message)
+
+    def get_xuid(self, gamertag):
+        profile = self.profile_provider.get_profile_by_gamertag(gamertag).json()
+        xuid = profile['profileUsers'][0]['id']
+
+        return xuid
