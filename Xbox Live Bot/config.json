@@ -1,9 +1,9 @@
 {
-    "email": "neogalik@live.com",
-    "password": "GigafrostK",
-    "X-Auth": "4a4c9c839203a8a08053c05a4609ec2d32b7d38a",
-    "max_recents": 10,
-    "message": "this is a test",
-    "block_start_time_utc": 1,
-    "block_stop_time_utc": 10
+    "email": "<your email>",
+    "password": "<your password>",
+    "X-Auth": "<your xauth key>",
+    "max_recents": <some amount of people to send messages to>,
+    "message": "<a message you want to send to all of them>",
+    "block_start_time_utc": <UTC timestamp of a blocked out timeframe (start)>,
+    "block_stop_time_utc": <UTC timestamp of a blocked out timeframe (end)>
 }
