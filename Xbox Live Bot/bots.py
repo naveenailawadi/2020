@@ -1,10 +1,8 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from xbox.webapi.api.client import XboxLiveClient
 from xbox.webapi.authentication.manager import AuthenticationManager
 from xbox.webapi.api.provider.profile import ProfileProvider
-from xbox.webapi.common.exceptions import AuthenticationException
 from xboxapi.client import Client
 import requests
 import time
