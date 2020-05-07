@@ -1,7 +1,8 @@
 from bots import RecentScraper, XMessenger
+from tools import ConfigManager, RecordManager
+from requests.exceptions import ReadTimeout
 import json
 import time
-import pandas as pd
 
 DATA_CSV = 'sent.csv'
 FRIENDS_CSV = 'friends.csv'
@@ -22,9 +23,11 @@ with open(CONFIG_FILE, 'r') as config:
     BLOCK_STOP_TIME_UTC = information['block_stop_time_utc']
 
 
-# create a scraper and scrape all recents
+# create necessary objects
 scraper = RecentScraper(EMAIL, PASSWORD)
 messenger = XMessenger(EMAIL, PASSWORD, X_AUTH_KEY)
+config_manager = ConfigManager(CONFIG_FILE)
+record_manager = RecordManager(DATA_CSV, CONFIG_FILE)
 
 # create the driver, scrape, close the driver
 scraper.create_webdriver()
@@ -34,31 +37,26 @@ recents = set(scraper.get_recents(MAX_RECENTS))
 scraper.close_webdriver()
 
 # get people that have already been sent a message
-old_df = pd.read_csv(DATA_CSV, header=0)
-header_row = old_df.columns
-removables_df = old_df[old_df['sent_time'] > BLOCK_START_TIME_UTC][old_df['sent_time'] < BLOCK_STOP_TIME_UTC]
-removables = set(removables_df['gamertag'])
-
-# remove users that are friends
-friends_df = pd.read_csv(FRIENDS_CSV, header=0)
-friends = set(friends_df['gamertag'])
-removables = removables | friends
-
+removables = record_manager.get_removables(BLOCK_START_TIME_UTC, BLOCK_STOP_TIME_UTC)
 to_send = list(recents - removables)
 
 # send the messages to the appropriate gamertags
+sent_messages = []
 for gamertag in to_send:
-    messenger.send_message(gamertag, MESSAGE)
-    print(f"Message sent to {gamertag}")
-    time.sleep(1)
+    try:
+        messenger.send_message(gamertag, MESSAGE)
+        print(f"Message sent to {gamertag}")
+    except ReadTimeout:
+        pass
+    time.sleep(10)
 
 
 # add the sent data to the dataframe
 send_time = time.time()
-data = [[recipient, MESSAGE, send_time] for recipient in to_send]
-appendable_df = pd.DataFrame(data, columns=header_row)
-output_df = old_df.append(appendable_df, ignore_index=True)
-output_df.to_csv(DATA_CSV, index=False)
+record_manager.add_records(sent_messages, MESSAGE)
+
+# update the json to the current time
+config_manager.update_key('block_stop_time_utc', send_time)
 
 
 '''
