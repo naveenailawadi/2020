@@ -1,9 +1,0 @@
-{
-    "email": "<your email>",
-    "password": "<your password>",
-    "X-Auth": "<your xauth key>",
-    "max_recents": <some amount of people to send messages to>,
-    "message": "<a message you want to send to all of them>",
-    "block_start_time_utc": <UTC timestamp of a blocked out timeframe (start)>,
-    "block_stop_time_utc": <UTC timestamp of a blocked out timeframe (end)>
-}
