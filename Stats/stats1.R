@@ -419,7 +419,7 @@ mean_diff_confidence_interval <- function(array1, array2, delta, alpha)
   cat(sprintf("Difference: %s\n", diff))
   cat(sprintf("Degrees of Freedom: %s\n", df))
   cat(sprintf("t-value: %s\n", t))
-  cat(sprintf("P-value: %s", p))
+  cat(sprintf("P-value: %s\n", p))
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Margin of Error: %s\n", me))
   cat(sprintf("Lower End: %s\n", lower))
@@ -486,6 +486,7 @@ t_pooled <- function(array1, array2, delta)
 }
 
 
+
 # array format: c(mean, sd, population)
 mean_diff_confidence_interval_pooled <- function(array1, array2, delta, alpha)
 {
@@ -534,6 +535,7 @@ t_paired <- function(pairwise_differences, sd, population, delta)
 }
 
 
+# only use paired tests for before/after scenarios
 mean_diff_confidence_intervals_paired <- function(pairwise_differences, sd_differences, population, delta, alpha)
 {
   se = sd_mean(sd_differences, population)
@@ -788,7 +790,7 @@ sd_linear_model <- function(predictor_array, response_array)
   correlation_coefficient = correlation_coefficient_linear(predictor_array, response_array)
 
   slope = slope_linear(sd_predictor, sd_response, correlation_coefficient)
-  intercept = intercept_linear(mean_predictor, mean_response, slope)
+  intercept = intercept_linear(mean_confipredictor, mean_response, slope)
   
   # run the model on all values to get predictions
   predictions = run_linear(predictor_array, intercept, slope)
