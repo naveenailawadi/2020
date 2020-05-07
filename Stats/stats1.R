@@ -1,4 +1,4 @@
-# discrete functions
+# discrete probability functions
 # with the arrays, a value can be passed instead (just use a probability of 1)
 
 expected_value <- function(value_array, probability_array)
@@ -191,7 +191,7 @@ p_test <- function(old_amount, sample_amount, sd, population, type, one_sided)
   cat(sprintf("P-value: %s", p))
 }
 
-
+# a way to form confidence intervals
 confidence_interval <- function(sample_amount, population, alpha)
 {
   # convert proportions to amounts
@@ -213,11 +213,10 @@ confidence_interval <- function(sample_amount, population, alpha)
   cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("z-score: %s\n", z))
   cat(sprintf("Margin of Error: %s\n", me))
-  cat(sprintf("Lower End: %s\n", lower))
-  cat(sprintf("Higher End: %s\n", higher))
+  cat(sprintf("Lower End (proportion): %s\n", lower))
+  cat(sprintf("Higher End (proportion): %s\n", higher))
   
 }
-
 
 # returns the difference in probability given a start and end value (not proportion)
 prob_diff <- function(start, end, mean, sd, df)
@@ -566,7 +565,7 @@ correlation_coefficient_linear <- function(preidictor_array, response_array)
 
 
 # uses a set linear model with a predictor (just fancy use of a line)
-run_linear <- function(intercept, slope, predictor)
+run_linear <- function(predictor, intercept, slope)
 {
   response = intercept + slope*predictor
   
@@ -601,13 +600,21 @@ sd_linear <- function(actual_reponse_array, predicted_response_array)
   return(sd)
 }
 
+# create a function to get the intercept of a model
+intercept_linear <- function(mean_predictor, mean_response, slope)
+{
+  intercept = mean_response  - slope * mean_predictor
+  
+  return(intercept)
+}
+
 
 # finds the equation of a line for a linear model
 linear_mean_model <- function(mean_predictor, mean_response, sd_predictor, sd_response, correlation_coefficient)
 {
   # find the attributes of the line
   slope = slope_linear(sd_predictor, sd_response, correlation_coefficient)
-  intercept = mean_response  - slope * mean_predictor
+  intercept = intercept_linear(mean_predictor, mean_response, slope)
 
   
   # output the line's equation
@@ -623,11 +630,11 @@ sd_linear_slope <- function(sd_response, sd_spread, sample_size)
   return(sd)
 }
 
-t_value_correlation_coefficient <- function(r, population)
+t_value_correlation_coefficient <- function(correlation_coefficient, population)
 {
   df = population - 2
   
-  t = r * sqrt(df / (1 - r**2))
+  t = correlation_coefficient * sqrt(df / (1 - r**2))
   
   return(t)
 }
@@ -660,11 +667,11 @@ sd_linear_model_single <- function(predictor, mean_predictor, sd_intercept, sd_s
 
 
 # create a function to calculate the confidence interval of a linear regression model for
-# all values at a particular point
-confidence_interval_linear_all <- function(intercept, slope, predictor, 
+# the mean value at a particular point
+confidence_interval_linear_mean <- function(intercept, slope, predictor, 
                                        mean_predictor, sd_intercept, sd_spread, population, alpha)
 {
-  prediction = run_linear(intercept, slope, predictor)
+  prediction = run_linear(predictor, intercept, slope)
   
   sd = sd_linear_model_all(predictor, mean_predictor, sd_intercept, sd_spread, population)
   
@@ -685,6 +692,7 @@ confidence_interval_linear_all <- function(intercept, slope, predictor,
   cat(sprintf("t-value: %s\n", t))
   cat(sprintf("Standard Error: %s\n", sd))
   cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Prediction: %s\n", prediction))
   cat(sprintf("Lower End: %s\n", lower))
   cat(sprintf("Higher End: %s\n", higher))
 }
@@ -695,9 +703,9 @@ confidence_interval_linear_all <- function(intercept, slope, predictor,
 confidence_interval_linear_single <- function(intercept, slope, predictor, 
                                            mean_predictor, sd_intercept, sd_spread, population, alpha)
 {
-  prediction = run_linear(intercept, slope, predictor)
+  prediction = run_linear(predictor, intercept, slope)
   
-  sd = sd_linear_model_single(predictor, mean_predictor, sd_intercept, sd_spread, population)
+  se = sd_linear_model_single(predictor, mean_predictor, sd_intercept, sd_spread, population)
   
   # need to divide alpha for 2-sided test
   df = population - 2
@@ -706,24 +714,119 @@ confidence_interval_linear_single <- function(intercept, slope, predictor,
   # calculate some output stats
   diff = predictor - mean_predictor
   
-  me = sd * t
-  
+  me = se * t
+
   lower = prediction - me
   higher = prediction + me
   
   cat(sprintf("Difference from mean: %s\n", diff))
   cat(sprintf("Degrees of Freedom: %s\n", df))
   cat(sprintf("t-value: %s\n", t))
-  cat(sprintf("Standard Error: %s\n", sd))
+  cat(sprintf("Standard Error: %s\n", se))
   cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Prediction: %s\n", prediction))
   cat(sprintf("Lower End: %s\n", lower))
   cat(sprintf("Higher End: %s\n", higher))
 }
 
 
+# create a function to predict a linear value
+predict_linear <- function(predictor, mean_predictor, mean_response, sd_predictor, sd_response, correlation_coefficient)
+{
+  # get the slope of the line
+  slope = slope_linear(sd_predictor, sd_response, correlation_coefficient)
+  intercept = mean_response  - slope * mean_predictor
+  
+  # predict the value
+  prediction = run_linear(predictor, intercept, slope)
+  
+  return(prediction)
+}
+
+
+# create a function to find the r^2 value (kind of useless when you can just square the correlation coefficient)
+correlation_coefficient_linear <- function(predictor_array, response_array)
+{
+  amount = length(predictor_array)
+  
+  # calculate preliminary information
+  sum_of_products = sum(predictor_array * response_array)
+  product_of_sums = sum(predictor_array) * sum(response_array)
+  
+  predictor_sum_of_squares = sum(predictor_array**2)
+  predictor_square_of_sum = sum(predictor_array)**2
+  
+  response_sum_of_squares = sum(response_array**2)
+  response_square_of_sum = sum(response_array)**2
+  
+  numerator = amount * sum_of_products - product_of_sums
+  denominator = sqrt( (amount * predictor_sum_of_squares - predictor_square_of_sum) * 
+                        (amount * response_sum_of_squares - response_square_of_sum) )
+  
+  correlation_coefficient = numerator / denominator
+  
+  
+  
+  return(correlation_coefficient)
+}
 
 
 
+# create more functions for analyzing linear models
+
+# this finds the general sd for the entire linear model
+sd_linear_model <- function(predictor_array, response_array)
+{
+  # get data to create and run a model
+  amount = length(predictor_array)
+  
+  mean_predictor = mean(predictor_array)
+  mean_response = mean(response_array)
+  
+  sd_predictor = sd(predictor_array)
+  sd_response = sd(response_array)
+  correlation_coefficient = correlation_coefficient_linear(predictor_array, response_array)
+
+  slope = slope_linear(sd_predictor, sd_response, correlation_coefficient)
+  intercept = intercept_linear(mean_predictor, mean_response, slope)
+  
+  # run the model on all values to get predictions
+  predictions = run_linear(predictor_array, intercept, slope)
+  
+  # find the standard deviation using the formula
+  residuals = response_array - predictions
+  numerator = sum(residuals**2)
+  sd = sqrt( numerator / (amount - 2) )
+  
+  
+  return(sd)
+}
+
+# create a function to get the standard error of the regression slope
+se_regression_slope <- function(sd_model, sd_predictor, population)
+{
+  se = sd_model / (sd_predictor * sqrt(population - 1))
+  
+  return(se)
+}
+
+confidence_interval_regression_slope <- function(coefficient, sd_coefficient, alpha)
+{
+  
+  # use z-score for this
+  z = qnorm(alpha/2)
+    
+  me = sd_coefficient * z
+  
+  lower = coefficient - me
+  higher = coefficient + me
+  
+  cat(sprintf("z-statistic: %s\n", z))
+  cat(sprintf("Standard Error: %s\n", sd_coefficient))
+  cat(sprintf("Margin of Error: %s\n", me))
+  cat(sprintf("Lower End: %s\n", lower))
+  cat(sprintf("Higher End: %s\n", higher))
+}
 
 
 
