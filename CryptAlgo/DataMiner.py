@@ -67,7 +67,7 @@ class Miner:
                                                                 close=build_df['Close'], volume=build_df['Volume'],
                                                                 n=PERIOD).volume_weighted_average_price()
 
-        # export the old dataframe
+        # send the dataframe to a csv
         build_df.to_csv(build_csv, index=False)
 
     def build_set_on_timeframe(self, ticker, timeframe):
