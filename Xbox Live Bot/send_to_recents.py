@@ -45,8 +45,11 @@ sent_messages = []
 for gamertag in to_send:
     try:
         messenger.send_message(gamertag, MESSAGE)
+        sent_messages.append(gamertag)
         print(f"Message sent to {gamertag}")
     except ReadTimeout:
+        # sleep extra to avoid getting banned
+        time.sleep(30)
         pass
     time.sleep(10)
 

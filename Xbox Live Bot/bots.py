@@ -133,7 +133,7 @@ class RecentScraper:
 
 
 # this class will work when microsoft fixes this endpoint
-class MicrosoftMessenger:
+class MicrosoftBot:
     def __init__(self, email, password):
         self.auth_mgr = AuthenticationManager()
 
@@ -147,12 +147,19 @@ class MicrosoftMessenger:
         # set the new info to a xbl client
         self.xbl_client = XboxLiveClient(
             self.auth_mgr.userinfo.userhash, self.auth_mgr.xsts_token.jwt, self.auth_mgr.userinfo.xuid)
+        self.profile_provider = ProfileProvider(self.xbl_client)
 
     # sends message to list of multiple users
     def send_message(self, message, users):
         response = self.xbl_client.message.send_message(message, gamertags=users)
 
         return response
+
+    # create a method to get the user's recent friends
+    def get_recent_friends(self, gamertag):
+        profile = self.profile_provider.get_profile_by_gamertag(gamertag).json()
+
+        return profile
 
 
 # create a class that uses the third party API to send messages
@@ -209,3 +216,27 @@ class XMessenger:
         xuid = profile['profileUsers'][0]['id']
 
         return xuid
+
+
+if __name__ == '__main__':
+    # run some test stuff
+    with open('config.json', 'r') as config:
+        # open the file
+        information = json.load(config)
+
+        # load the data into constants
+        EMAIL = information['email']
+        PASSWORD = information['password']
+        X_AUTH_KEY = information['X-Auth']
+        MAX_RECENTS = information['max_recents']
+        MESSAGE = information['message']
+        BLOCK_START_TIME_UTC = information['block_start_time_utc']
+        BLOCK_STOP_TIME_UTC = information['block_stop_time_utc']
+
+    # initialize the extrapolator
+    bot = MicrosoftBot(EMAIL, PASSWORD)
+
+    # get the friends
+    friends = bot.get_recent_friends('NJS26104')
+
+    print(friends)
