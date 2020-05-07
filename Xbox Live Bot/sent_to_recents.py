@@ -59,3 +59,10 @@ data = [[recipient, MESSAGE, send_time] for recipient in to_send]
 appendable_df = pd.DataFrame(data, columns=header_row)
 output_df = old_df.append(appendable_df, ignore_index=True)
 output_df.to_csv(DATA_CSV, index=False)
+
+
+'''
+NOTES
+- make a way to update the stop time to the current time
+- create a tools file for creating classes to manage files easily
+'''
