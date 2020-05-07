@@ -272,21 +272,21 @@ mean_confidence_interval <- function(mean, sd, population, alpha, one_sided)
 }
 
 
-# use NULL as current_sd if there none is provided --> will use standard
+# use NULL as sample_proportion if there none is provided --> will use standard
 # of 0.5 for sample proportion
-sample_sizer <- function(current_sd, target_me, alpha, one_sided)
+sample_sizer <- function(sample_proportion, target_me, alpha, one_sided)
 {
   # using z-score because degrees of freedom are unknown --> can't use t-value
   if (one_sided) { z = qnorm(alpha) }
   else { z = qnorm(alpha/2) }
   
-  if (length(current_sd) == 0)
+  if (length(sample_proportion) == 0)
   {
     population = ((z / target_me)**2) * 0.25
   }
   else
   {
-    population = (z * current_sd / target_me)**2
+    population = (z**2)*(sample_proportion - sample_proportion**2) / (target_me**2)
   }
   
   cat(sprintf("z-statistic: %s\n", z))
@@ -768,10 +768,16 @@ correlation_coefficient_linear <- function(predictor_array, response_array)
   correlation_coefficient = numerator / denominator
   
   
-  
   return(correlation_coefficient)
 }
 
+# make a way to calculate correlation coefficient from sd
+correlation_coefficient_from_sd <- function(sd_predictor, sd_response, sd_product)
+{
+  correlation_coefficient = sd_product / (sd_predictor * sd_response)
+  
+  return(r)
+}
 
 
 # create more functions for analyzing linear models
