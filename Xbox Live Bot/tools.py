@@ -8,7 +8,8 @@ class ConfigManager:
         self.filepath = filepath
 
         # load the file
-        self.information = json.loads(filepath)
+        with open(self.filepath, 'r') as infile:
+            self.information = json.loads(infile.read())
 
     def update_key(self, config_key, value):
         self.information[config_key] = value
@@ -53,3 +54,29 @@ class RecordManager:
         appendable_df = pd.DataFrame(data, columns=self.header_row)
         output_df = self.old_df.append(appendable_df, ignore_index=True)
         output_df.to_csv(self.sent_file, index=False)
+
+
+class ListManager:
+    def __init__(self, master_list):
+        self.master_list = master_list
+
+    # check the whole list for any matches --> return a number of matches
+    def find_any_overlap(self, checking_list):
+        matches = {self.check_match(phrase) for phrase in checking_list}
+
+        matches.add(False)
+
+        # return the length --> > 1 --> a match was found
+        if len(matches) > 1:
+            return True
+        else:
+            return False
+
+    # check the individual list for a match
+    def check_match(self, check_string):
+        for phrase in self.master_list:
+            if phrase.lower() in phrase.lower():
+                return True
+
+        # return true or false for a match being found
+        # if it reaches here, no games were found

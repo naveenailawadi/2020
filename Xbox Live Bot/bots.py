@@ -3,9 +3,13 @@ from selenium.common.exceptions import NoSuchElementException
 from xbox.webapi.api.client import XboxLiveClient
 from xbox.webapi.authentication.manager import AuthenticationManager
 from xbox.webapi.api.provider.profile import ProfileProvider
+from xbox.webapi.api.provider.people import PeopleProvider
+from tools import ListManager
 from xboxapi.client import Client
+from random import shuffle
 import requests
 import time
+import json
 
 LOGIN = 'https://login.live.com/login.srf'
 XBOX_SITE = 'https://account.xbox.com/en-US/social?xr=shellnav'
@@ -147,7 +151,8 @@ class MicrosoftBot:
         # set the new info to a xbl client
         self.xbl_client = XboxLiveClient(
             self.auth_mgr.userinfo.userhash, self.auth_mgr.xsts_token.jwt, self.auth_mgr.userinfo.xuid)
-        self.profile_provider = ProfileProvider(self.xbl_client)
+        self.profile_provider = ProfileProvider(self.xbl_client)  # not currently used but could be useful later
+        self.people_provider = PeopleProvider(self.xbl_client)
 
     # sends message to list of multiple users
     def send_message(self, message, users):
@@ -155,15 +160,46 @@ class MicrosoftBot:
 
         return response
 
-    # create a method to get the user's recent friends
-    def get_recent_friends(self, gamertag):
+    # create a function that gets xuids
+    def get_xuid(self, gamertag):
         profile = self.profile_provider.get_profile_by_gamertag(gamertag).json()
+        try:
+            xuid = profile['profileUsers'][0]['id']
+        except KeyError:
+            # this means the gamertag wasn't found
+            return
 
-        return profile
+        return xuid
+
+    # create a function to convert xuids back to gamertags
+    def get_gamertag(self, xuid):
+        profile = self.profile_provider.get_profile_by_xuid(xuid).json()
+        settings = profile['profileUsers'][0]['settings']
+        info_dict = {pair['id']: pair['value'] for pair in settings}
+        gamertag = info_dict['Gamertag']
+
+        return gamertag
+
+    # create a method to get the user's friends (use xuids to save time and maximize integration)
+    def get_friends(self, gamertag):
+        xuid = self.get_xuid(gamertag)
+        response_json = self.people_provider.get_friends_by_xuid(xuid).json()
+
+        try:
+            friends_raw = response_json['people']
+        except KeyError:
+            print(f"{gamertag} is a certified loner")
+            friends_raw = []
+            # this often means that the api is blocking us
+            time.sleep(61)
+
+        xuids = {info['xuid'] for info in friends_raw}
+
+        return xuids
 
 
 # create a class that uses the third party API to send messages
-class XMessenger:
+class XBot(MicrosoftBot):
     def __init__(self, email, password, x_auth_key):
         self.x_auth_key = x_auth_key
         self.url = 'http://xapi.us/v2'
@@ -182,8 +218,20 @@ class XMessenger:
         # set the new info to a xbl client
         self.xbl_client = XboxLiveClient(
             self.auth_mgr.userinfo.userhash, self.auth_mgr.xsts_token.jwt, self.auth_mgr.userinfo.xuid)
-
         self.profile_provider = ProfileProvider(self.xbl_client)
+        self.people_provider = PeopleProvider(self.xbl_client)
+
+    # must have a method here to get the recent activity of a user
+    def get_games(self, gamertag):
+        # this takes more time but saves api requests
+        xuid = self.get_xuid(gamertag)
+        gamer = self.client.gamer(gamertag=gamertag, xuid=xuid)
+
+        titles = gamer.get('xboxonegames')['titles']
+
+        games = [title['name'] for title in titles]
+
+        return games
 
     def send_messages_url(self, gamertags, message):
         endpoint = f"{self.url}/messages"
@@ -206,16 +254,59 @@ class XMessenger:
 
     def send_message(self, gamertag, message):
         # create a game object
-        gamer = self.client.gamer(gamertag)
+        xuid = self.get_xuid(gamertag)
+        gamer = self.client.gamer(gamertag, xuid)
 
         # send the message
         gamer.send_message(message)
 
-    def get_xuid(self, gamertag):
-        profile = self.profile_provider.get_profile_by_gamertag(gamertag).json()
-        xuid = profile['profileUsers'][0]['id']
+    # create a method that extrapolates on a set of gamers and adds to it
+    # games --> particular games the gamer has to play to be added to the set
+    def extrapolate(self, gamertags, games, max_messages):
+        candidates = set()
+        list_manager = ListManager(games)
 
-        return xuid
+        for gamer in gamertags:
+            # find the frients and games --> build with a dict builder
+            friends = self.get_friends(gamer)
+
+            # use a set operator to add the friends
+            candidates = candidates | friends
+            time.sleep(2)
+
+        # randomize the candidates to increase spread
+        candidates = list(candidates)
+        print(candidates)
+        shuffle(candidates)
+
+        # find overlapping games --> add to gamertags if it the gamer matches one of the games
+        for gamer in candidates:
+            gamertag = self.get_gamertag(gamer)
+            print(f"found {gamertag}")
+
+            # this protexts against getting nonetype errrors
+            if not gamertag:
+                continue
+            elif not gamer:
+                continue
+
+            print(f"Checking what games {gamertag} plays")
+            games = list(set(self.get_games(gamertag)))
+
+            # check if any of the games are in the the list of games --> the list manager return
+            if list_manager.find_any_overlap(games):
+                gamertags.add(gamertag)
+                print(f"Added {gamertag} from friends")
+
+            # check if the gamertags has reached its max
+            if len(gamertags) >= max_messages:
+                break
+
+            # sleep to avoid throttling
+            time.sleep(5)
+
+        # return the gamertags
+        return gamertags
 
 
 if __name__ == '__main__':
@@ -234,9 +325,8 @@ if __name__ == '__main__':
         BLOCK_STOP_TIME_UTC = information['block_stop_time_utc']
 
     # initialize the extrapolator
-    bot = MicrosoftBot(EMAIL, PASSWORD)
+    bot = XBot(EMAIL, PASSWORD, X_AUTH_KEY)
 
     # get the friends
-    friends = bot.get_recent_friends('NJS26104')
-
-    print(friends)
+    # friends = bot.get_friend_xuids('NJS26104')
+    friends = bot.get_friends('NJS26104')
