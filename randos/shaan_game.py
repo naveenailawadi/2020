@@ -10,7 +10,14 @@ def run_game():
     user_input = max_numbers + 5
 
     guess_count = 0
-    user_input = int(input('Guess a number: '))
+    try:
+        user_input = int(input('Guess a number: '))
+    except ValueError:
+        try:
+            user_input = int(input('Try again: '))
+        except ValueError:
+            print('You are a moron. Learn what a number is.')
+            return
     while user_input != selection:
         guess_count += 1
         if user_input > selection:
@@ -23,5 +30,6 @@ def run_game():
         user_input = int(input('Try again: '))
         if user_input == selection:
             print('You got it! The number is {selection}.')
+
 
 run_game()
