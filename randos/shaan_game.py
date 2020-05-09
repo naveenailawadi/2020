@@ -23,3 +23,5 @@ def run_game():
         user_input = int(input('Try again: '))
         if user_input == selection:
             print('You got it! The number is {selection}.')
+
+run_game()
