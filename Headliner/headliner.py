@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as bs
 import requests
+from jinja2 import Template
 from datetime import datetime as dt
-from multiprocessing import Pool
 import random
 import os
 
@@ -30,6 +30,11 @@ class Article:
 
 # create a class that exports the documents
 class Exporter:
+    # create an init to add some necessary files
+    def __init__(self):
+        self.css = open('layout.css', 'r').read()
+        self.template = Template(open('layout.html', 'r').read())
+
     def create_folder(self):
         today = dt.now()
         self.folder = f"News {today.month}-{today.day}-{today.year}"
@@ -42,6 +47,10 @@ class Exporter:
         # enter the folder
         os.chdir(self.folder)
 
+        # add the necessary documents
+        with open('main.css', 'w') as outfile:
+            outfile.write(self.css)
+
     def add_article(self, article):
         # handle if there is no folder
         if not self.folder:
@@ -51,9 +60,7 @@ class Exporter:
         # add the document as html
         filename = f"{article.title.replace('/', ' - ')} - ({article.source}).html"
         with open(filename, 'w') as outfile:
-            html_doc = f"<title>{article.title} - ({article.source})</title>\n\t<h1>{article.title}</h1>\n"
-            for paragraph in article.paragraphs:
-                html_doc += f"\t\t<p>{paragraph}</p>\n"
+            html_doc = self.template.render(title=article.title, source=article.source, paragraphs=article.paragraphs)
 
             # write it all to the outfile
             outfile.write(html_doc)
@@ -142,7 +149,7 @@ class Scraper:
         # remove headlines with nonetypes in them
         exportable = []
         for headline in headlines:
-            if not ('none' in headline.lower()):
+            if not ('None' == headline.split('/')[-1].strip()):
                 exportable.append(headline)
 
         # make sure that the shuffled versions are evenly distributed across sources
