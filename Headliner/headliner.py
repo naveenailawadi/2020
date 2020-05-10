@@ -156,10 +156,10 @@ class Scraper:
         selections = headlines[:max_count]
         sources = {headline.split('.')[1] for headline in headlines}
 
-        while len(sources) == 1:
+        while (len(sources) == 1) and (selections > 1):
             random.shuffle(headlines)
             selections = headlines[:max_count]
-            sources = {headline.split('.')[1] for headline in headlines}
+            sources = {headline.split('.')[1] for headline in selections}
 
         articles = [self.paywall_bypass(headline) for headline in selections]
 
