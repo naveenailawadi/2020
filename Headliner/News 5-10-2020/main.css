@@ -1,0 +1,14 @@
+body
+{
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+h1
+{
+    text-align: center;
+}
+p
+{
+    font-size: 125%;
+}

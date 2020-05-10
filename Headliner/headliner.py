@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 from jinja2 import Template
 from datetime import datetime as dt
+from multiprocessing import Pool
 import random
 import os
 
@@ -143,6 +144,10 @@ class Scraper:
         except ValueError:
             pass
 
+        # handle for excessively large selections
+        if max_count > (len(headlines) - 1):
+            max_count = len(headlines)
+
         # shuffle them
         random.shuffle(headlines)
 
@@ -161,7 +166,9 @@ class Scraper:
             selections = headlines[:max_count]
             sources = {headline.split('.')[1] for headline in selections}
 
-        articles = [self.paywall_bypass(headline) for headline in selections]
+        # using multiprocessing to speed it up
+        with Pool(MAX_PROCESSES) as pool:
+            articles = pool.map(self.paywall_bypass, selections, chunksize=1)
 
         # return the amount given a max count
         return articles
