@@ -49,7 +49,7 @@ class Exporter:
             return
 
         # add the document as html
-        filename = f"{article.title} - ({article.source}).html"
+        filename = f"{article.title.replace('/', ' - ')} - ({article.source}).html"
         with open(filename, 'w') as outfile:
             html_doc = f"<title>{article.title} - ({article.source})</title>\n\t<h1>{article.title}</h1>\n"
             for paragraph in article.paragraphs:
