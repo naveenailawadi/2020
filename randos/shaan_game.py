@@ -32,4 +32,5 @@ def run_game():
             print('You got it! The number is {selection}.')
 
 
-run_game()
+if __name__ == '__main__':
+    run_game()
