@@ -7,7 +7,7 @@ import random
 import os
 
 WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
-            ('https://www.economist.com', ['h3'])]
+            ('https://www.economist.com', ['h3']), ('https://www.bloomberg.com/', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
 
 # create a class that handles html and turns them into documents
@@ -112,11 +112,11 @@ class Scraper:
 
     # add this many random articles by getting all the headlines and exporting a random selection
     def grab_random(self, max_count):
-        with Pool(len(WEBSITES)) as pool:
+        with Pool(MAX_PROCESSES) as pool:
             headlines = pool.starmap(self.grab_headlines, WEBSITES, chunksize=1)
 
         # flatten the set
-        headlines = list(set().union(*headlines))
+        headlines = set().union(*headlines)
 
         # remove nonetype from return (only if it exists)
         try:
