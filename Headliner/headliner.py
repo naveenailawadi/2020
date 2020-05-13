@@ -6,7 +6,8 @@ from multiprocessing import Pool
 import random
 import os
 
-WEBSITES = ['https://www.washingtonpost.com', 'https://www.nytimes.com', 'https://www.economist.com']
+WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
+            ('https://www.economist.com', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
 
 # create a class that handles html and turns them into documents
@@ -81,47 +82,24 @@ class Scraper:
 
         return new_article
 
-    # customize function for each one
-    def headline_grab_washpost(self):
-        website = WEBSITES[0]
-        # website = home
+    def grab_headlines(self, site, tags):
         # find websites
-        site_raw = requests.get(website)
+        site_raw = requests.get(site)
         site_soup = bs(site_raw.text, "html.parser")
 
         # finds headlines
-        titles = site_soup.find_all('h2')
-        titles.append(site_soup.find('h1'))
+        titles = []
+
+        for tag in tags:
+            new_titles = site_soup.find_all(tag)
+            titles.extend(new_titles)
 
         headlines = {self.href_extractor(headline) for headline in titles}
 
-        return headlines
-
-    def headline_grab_nyt(self):
-        website = WEBSITES[1]
-        # website = home
-        # find websites
-        site_raw = requests.get(website)
-        site_soup = bs(site_raw.text, "html.parser")
-
-        # finds headlines
-        titles = site_soup.find_all('article')
-        headlines = {f"{website}{self.href_extractor(headline)}" for headline in titles}
-
-        return headlines
-
-    def headline_grab_econ(self):
-        website = WEBSITES[2]
-        # website = home
-        # find websites
-        site_raw = requests.get(website)
-        site_soup = bs(site_raw.text, "html.parser")
-
-        # finds headlines
-        titles = site_soup.find_all('h3')
-
-        # make headlines a set of tuples
-        headlines = {f"{website}{self.href_extractor(headline)}" for headline in titles}
+        # check if the website is in the title yet
+        test = next(iter(headlines))
+        if not ('https://' in test):
+            headlines = {f"{site}{headline}" for headline in headlines}
 
         return headlines
 
@@ -134,7 +112,11 @@ class Scraper:
 
     # add this many random articles by getting all the headlines and exporting a random selection
     def grab_random(self, max_count):
-        headlines = list(self.headline_grab_nyt() | self.headline_grab_econ() | self.headline_grab_washpost())
+        with Pool(len(WEBSITES)) as pool:
+            headlines = pool.starmap(self.grab_headlines, WEBSITES, chunksize=1)
+
+        # flatten the set
+        headlines = list(set().union(*headlines))
 
         # remove nonetype from return (only if it exists)
         try:
