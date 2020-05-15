@@ -7,7 +7,7 @@ import random
 import os
 
 WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
-            ('https://www.economist.com', ['h3']), ('https://www.bloomberg.com/', ['h3'])]
+            ('https://www.economist.com', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
 
 # create a class that handles html and turns them into documents
@@ -98,9 +98,16 @@ class Scraper:
 
         # check if the website is in the title yet
         test = next(iter(headlines))
+
+        # handle for a nonetype test
+        while not test:
+            headlines.remove(test)
+            test = next(iter(headlines))
+
         if not ('https://' in test):
             headlines = {f"{site}{headline}" for headline in headlines}
 
+        print(f"Found {len(headlines)} headlines on {site}")
         return headlines
 
     def href_extractor(self, tag):
@@ -116,7 +123,7 @@ class Scraper:
             headlines = pool.starmap(self.grab_headlines, WEBSITES, chunksize=1)
 
         # flatten the set
-        headlines = set().union(*headlines)
+        headlines = list(set().union(*headlines))
 
         # remove nonetype from return (only if it exists)
         try:
@@ -143,7 +150,7 @@ class Scraper:
         selections = headlines[:max_count]
         sources = {headline.split('.')[1] for headline in headlines}
 
-        while (len(sources) == 1) and (selections > 1):
+        while (len(sources) < len(WEBSITES)) and (len(selections) > 1):
             random.shuffle(headlines)
             selections = headlines[:max_count]
             sources = {headline.split('.')[1] for headline in selections}
