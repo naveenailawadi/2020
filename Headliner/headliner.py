@@ -6,8 +6,7 @@ from multiprocessing import Pool
 import random
 import os
 
-WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
-            ('https://www.economist.com', ['h3'])]
+WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']), ('https://www.economist.com', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
 
 # create a class that handles html and turns them into documents
@@ -25,7 +24,7 @@ class Article:
 
         # figure out the type of tags that the document carries for paragraphs
         # do this by comparing the length of them
-        p_tags = soup.find_all('p')
+        p_tags = soup.find_all(['p', 'img'])
 
         self.paragraphs = [tag.text for tag in p_tags]
 
@@ -88,11 +87,7 @@ class Scraper:
         site_soup = bs(site_raw.text, "html.parser")
 
         # finds headlines
-        titles = []
-
-        for tag in tags:
-            new_titles = site_soup.find_all(tag)
-            titles.extend(new_titles)
+        titles = site_soup.find_all(tags)
 
         headlines = {self.href_extractor(headline) for headline in titles}
 
