@@ -24,9 +24,10 @@ class Article:
 
         # figure out the type of tags that the document carries for paragraphs
         # do this by comparing the length of them
-        p_tags = soup.find_all(['p', 'img'])
+        body_tags = soup.find_all(['p', 'img'])
 
-        self.paragraphs = [tag.text for tag in p_tags]
+        # make it into a string to enable multithreading
+        self.body_tags = [str(tag) for tag in body_tags]
 
 
 # create a class that exports the documents
@@ -61,7 +62,7 @@ class Exporter:
         # add the document as html
         filename = f"{article.title.replace('/', ' - ')} - ({article.source}).html"
         with open(filename, 'w') as outfile:
-            html_doc = self.template.render(title=article.title, source=article.source, paragraphs=article.paragraphs)
+            html_doc = self.template.render(title=article.title, source=article.source, body_tags=article.body_tags)
 
             # write it all to the outfile
             outfile.write(html_doc)
@@ -145,7 +146,7 @@ class Scraper:
         selections = headlines[:max_count]
         sources = {headline.split('.')[1] for headline in headlines}
 
-        while (len(sources) < len(WEBSITES)) and (len(selections) > 1):
+        while (len(sources) < len(WEBSITES)) and (len(selections) > len(WEBSITES)):
             random.shuffle(headlines)
             selections = headlines[:max_count]
             sources = {headline.split('.')[1] for headline in selections}
