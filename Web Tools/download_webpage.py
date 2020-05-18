@@ -2,8 +2,6 @@ from pywebcopy import save_webpage
 import logging
 import os
 
-CORES = 6
-
 # get rid of logging
 logging.basicConfig()
 
