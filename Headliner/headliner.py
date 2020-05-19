@@ -7,13 +7,7 @@ import random
 import os
 
 WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
-            ('https://www.economist.com', ['h3']),
-            ('https://www.forbes.com',
-                [
-                    ('div', {'class': 'data-viz__title-container'}),
-                    ('a', {'class': 'headlink'})
-                ]
-             )]
+            ('https://www.economist.com', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
 
 # create a class that handles html and turns them into documents
