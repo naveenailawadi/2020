@@ -39,9 +39,10 @@ otherwise, write "I am done") \n')
     if "i am done" in new_file.lower():
         break
     elif new_file in input_files:
-        print('You have already selected that article.')
+        print('You have already selected that file.')
     else:
         input_files.append(new_file)
+    print('\n')
 
 new_file_name = input('What would you like to call your new file? \n')
 if '.pdf' not in new_file_name.lower():
