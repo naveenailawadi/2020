@@ -1,0 +1,12 @@
+<b>{{information['date']}}</b>
+
+<i>Forex</i>
+{% for rate in information['forex_rates'] %}
+    {{ rate }}
+{% endfor %}
+
+<i>Oil</i>
+{% for rate in information['oil_rates'] %}
+    {{ rate }}
+{% endfor %}
+

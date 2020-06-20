@@ -1,3 +1,4 @@
 /Xbox Live Bot/config.json
 env/
 *.pdf
+secrets.py
