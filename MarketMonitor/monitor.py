@@ -1,27 +1,33 @@
 from forex_python.converter import CurrencyRates, CurrencyCodes
-from bs4 import BeautifulSoup as bs
-import requests
+from selenium.webdriver.firefox.options import Options
+from selenium import webdriver
+import time
 
 
 class ForexMonitor(CurrencyRates, CurrencyCodes):
     # create a function to compare based on a set forx
     def usd_to(self, symbol):
         # get rate
-        rate = self.convert('USD', symbol, 1)
+        rate = round(self.get_rate('USD', symbol), 2)
 
-        usd_symbol = self.get_symbol('USD')
         other_symbol = self.get_symbol(symbol)
-        return f"{usd_symbol}1 : {other_symbol}{rate}"
+        return f"$1 : {other_symbol}{rate}"
 
 
 class CommodityMonitor:
     # get the price of oil in dollars
     def get_wti_price(self):
-        # make a soup object --> get the price info
-        raw = requests.get('https://oilprice.com/oil-price-charts')
-        soup = bs(raw.text, 'html.parser')
+        # use selenium (better for interacting with JS)
+        options = Options()
+        options.add_argument('--headless')
+        driver = webdriver.Firefox(options=options)
+        driver.get('https://oilprice.com/oil-price-charts')
+        time.sleep(2)
 
-        wti_price = soup.find('h2')[0].text
+        # get the oil price
+        wti_price_raw = driver.find_element_by_xpath('//tr[@data-spreadsheet="Crude Oil WTI"]//td[@class="last_price"]').text
+        wti_price = f"${wti_price_raw} (per barrel)"
+        driver.quit()
 
         return wti_price
 

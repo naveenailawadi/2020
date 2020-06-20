@@ -1,0 +1,3 @@
+[submodule "MarketMonitor/forex-python"]
+	path = MarketMonitor/forex-python
+	url = https://github.com/MicroPyramid/forex-python
