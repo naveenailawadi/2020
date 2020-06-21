@@ -1,16 +1,16 @@
 <b>{{information['date']}}</b>
 
-<i>Forex</i>
+<b>Forex</b>
 {% for rate in information['forex_rates'] %}
     {{ rate }}
 {% endfor %}
 
-<i>Oil</i>
+<b>Oil</b>
 {% for rate in information['oil_rates'] %}
     {{ rate }}
 {% endfor %}
 
-<i>Bonds</i>
+<b>Bonds</b>
 {% for year, rate in information['bond_rates'] %}
     {{ year }}-year yield: {{ rate }}
 {% endfor %}
