@@ -46,7 +46,6 @@ def send():
 
 # send it over and over on a schedule
 if __name__ == '__main__':
-    '''
     schedule.every().day.at(SEND_TIME).do(send)
 
     while True:
@@ -56,3 +55,4 @@ if __name__ == '__main__':
         time.sleep(10)
     '''
     send()
+    '''
