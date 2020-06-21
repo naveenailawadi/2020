@@ -15,7 +15,7 @@ BOND_MONITOR = BondMonitor()
 # create lists of the symbols
 FOREX_SYMBOLS = ['EUR', 'CNY']
 BOND_YEARS = [10, 30]
-SEND_TIME = '10:00'
+SEND_TIME = '9:00'
 
 
 # create a function that gets all the prices and sends them
