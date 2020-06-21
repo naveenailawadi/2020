@@ -18,9 +18,7 @@ class CommodityMonitor:
     # get the price of oil in dollars
     def get_wti_price(self):
         # use selenium (better for interacting with JS)
-        options = Options()
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
+        driver = create_driver()
         driver.get('https://oilprice.com/oil-price-charts')
         time.sleep(2)
 
@@ -30,6 +28,13 @@ class CommodityMonitor:
         driver.quit()
 
         return wti_price
+
+
+def create_driver():
+    options = Options()
+    options.add_argument('--headless')
+    driver = webdriver.Firefox(options=options)
+    return driver
 
 
 '''
