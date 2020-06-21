@@ -1,4 +1,4 @@
-from monitor import ForexMonitor, CommodityMonitor
+from monitor import ForexMonitor, CommodityMonitor, BondMonitor
 from TelegramBot import Messenger
 from datetime import datetime as dt
 from secrets import *
@@ -10,9 +10,11 @@ import time
 MESSENGER = Messenger(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
 FOREX_MONITOR = ForexMonitor()
 COMMODITY_MONITOR = CommodityMonitor()
+BOND_MONITOR = BondMonitor()
 
 # create lists of the symbols
 FOREX_SYMBOLS = ['EUR', 'CNY']
+BOND_YEARS = [10, 30]
 SEND_TIME = '10:00'
 
 
@@ -28,10 +30,14 @@ def send():
     # get the oil price
     oil_price = COMMODITY_MONITOR.get_wti_price()
 
+    # get the 10 year and 30 year bond prices
+    bond_rates = [(year: BOND_MONITOR.get_yield(year)) for year in BOND_YEARS]
+
     information = {
         'date': date,
         'forex_rates': forex_rates,
-        'oil_rates': [oil_price]
+        'oil_rates': [oil_price],
+        'bond_rates': bond_rates
     }
 
     # send it with telegram

@@ -10,3 +10,8 @@
     {{ rate }}
 {% endfor %}
 
+<i>Bonds</i>
+{% for year, rate in information['bond_rates'] %}
+    {{ year }}-year yield: {{ rate }}
+{% endfor %}
+
