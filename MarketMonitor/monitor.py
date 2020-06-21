@@ -34,7 +34,7 @@ class CommodityMonitor:
 
 
 # create a class for getting bond prices
-class BondMonitory:
+class BondMonitor:
     def get_yield(self, year_amount):
         driver = create_driver()
         driver.get(f"https://ycharts.com/indicators/{year_amount}_year_treasury_rate")

@@ -31,7 +31,7 @@ def send():
     oil_price = COMMODITY_MONITOR.get_wti_price()
 
     # get the 10 year and 30 year bond prices
-    bond_rates = [(year: BOND_MONITOR.get_yield(year)) for year in BOND_YEARS]
+    bond_rates = [(year, BOND_MONITOR.get_yield(year)) for year in BOND_YEARS]
 
     information = {
         'date': date,
