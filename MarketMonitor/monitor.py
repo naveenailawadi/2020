@@ -1,5 +1,4 @@
 from forex_python.converter import CurrencyRates, CurrencyCodes
-from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 import time
 

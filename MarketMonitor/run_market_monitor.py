@@ -48,8 +48,9 @@ def send():
 # send it over and over on a schedule
 if __name__ == '__main__':
     for name in DAYS:
-        statement = f"schedule.every().{name}.day.at(SEND_TIME).do(send)"
+        statement = f"schedule.every().{name}.at(SEND_TIME).do(send)"
         exec(statement)
+        print(f"Added {name}")
 
     while True:
         # Checks whether a scheduled task
