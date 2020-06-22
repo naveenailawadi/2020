@@ -15,7 +15,8 @@ BOND_MONITOR = BondMonitor()
 # create lists of the symbols
 FOREX_SYMBOLS = ['EUR', 'CNY']
 BOND_YEARS = [10, 30]
-SEND_TIME = '9:00'
+SEND_TIME = '09:00'
+DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
 
 
 # create a function that gets all the prices and sends them
@@ -46,7 +47,9 @@ def send():
 
 # send it over and over on a schedule
 if __name__ == '__main__':
-    schedule.every().day.at(SEND_TIME).do(send)
+    for name in DAYS:
+        statement = f"schedule.every().{name}.day.at(SEND_TIME).do(send)"
+        exec(statement)
 
     while True:
         # Checks whether a scheduled task
