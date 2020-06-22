@@ -3,3 +3,6 @@ env/
 *.pdf
 secrets.py
 *.log
+*.gz
+*.exe
+*.out
