@@ -46,9 +46,12 @@ class BondMonitor:
 
 
 def create_driver():
-    options = Options()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--window-size=1420,1080')
     options.add_argument('--headless')
-    driver = webdriver.Firefox(options=options)
+    options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome(options=options)
     return driver
 
 
