@@ -30,6 +30,7 @@ def send():
 
     # get the oil price
     oil_price = COMMODITY_MONITOR.get_wti_price()
+    gold_price = COMMODITY_MONITOR.get_gold_price()
 
     # get the 10 year and 30 year bond prices
     bond_rates = [(year, BOND_MONITOR.get_yield(year)) for year in BOND_YEARS]
@@ -37,7 +38,7 @@ def send():
     information = {
         'date': date,
         'forex_rates': forex_rates,
-        'oil_rates': [oil_price],
+        'commodities': [oil_price, gold_price],
         'bond_rates': bond_rates
     }
 
