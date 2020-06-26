@@ -3,3 +3,4 @@ env/
 *.pdf
 secrets.py
 *.log
+__pycache__
