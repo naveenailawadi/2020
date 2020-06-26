@@ -4,3 +4,6 @@ env/
 secrets.py
 *.log
 __pycache__
+*.gz
+*.exe
+*.out

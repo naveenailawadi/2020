@@ -1,5 +1,4 @@
 from forex_python.converter import CurrencyRates, CurrencyCodes
-from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 import time
 
@@ -18,6 +17,20 @@ class ForexMonitor(CurrencyRates, CurrencyCodes):
 
 
 class CommodityMonitor:
+    # get the price of gold
+    def get_gold_price(self):
+        driver = create_driver()
+        driver.get('https://www.monex.com/gold-prices/')
+        time.sleep(SLEEP_INCREMENT)
+
+        # get the gold price
+        gold_price_raw = driver.find_element_by_xpath('//td[@id="spotoz"]').text
+        gold_price = f"Gold: {gold_price_raw} (per ounce)"
+        driver.quit()
+
+        # return the gold price
+        return gold_price
+
     # get the price of oil in dollars
     def get_wti_price(self):
         # use selenium (better for interacting with JS)
@@ -27,7 +40,7 @@ class CommodityMonitor:
 
         # get the oil price
         wti_price_raw = driver.find_element_by_xpath('//tr[@data-spreadsheet="Crude Oil WTI"]//td[@class="last_price"]').text
-        wti_price = f"${wti_price_raw} (per barrel)"
+        wti_price = f"WTI Oil: ${wti_price_raw} (per barrel)"
         driver.quit()
 
         return wti_price
@@ -46,9 +59,12 @@ class BondMonitor:
 
 
 def create_driver():
-    options = Options()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--window-size=1420,1080')
     options.add_argument('--headless')
-    driver = webdriver.Firefox(options=options)
+    options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome(options=options)
     return driver
 
 
