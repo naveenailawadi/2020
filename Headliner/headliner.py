@@ -75,7 +75,12 @@ class Scraper:
         return
 
     def paywall_bypass(self, website):
-        site_raw = requests.get(website).text
+        try:
+            site_raw = requests.get(website).text
+        except ConnectionError:
+            print(f"Could not connect to {website}")
+            return None
+
         source = website.split('.')[1]
 
         # make it and article object
@@ -157,6 +162,7 @@ class Scraper:
             articles = pool.map(self.paywall_bypass, selections, chunksize=1)
 
         # return the amount given a max count
+        articles = [article for article in articles if article]
         return articles
 
 
