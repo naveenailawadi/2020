@@ -1,9 +1,14 @@
 /Xbox Live Bot/config.json
 env/
 *.pdf
-secrets.py
+
 *.log
 __pycache__
 *.gz
 *.exe
+
+# outputs
 *.out
+
+# secrets
+secrets.py
