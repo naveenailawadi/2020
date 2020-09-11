@@ -1,7 +1,7 @@
 try:
     from PyPDF2 import PdfFileReader, PdfFileWriter
 except ImportError:
-    from pyPdf import PdfFileReader, PdfFileWriter
+    from PyPdf import PdfFileReader, PdfFileWriter
 
 
 def pdf_cat(input_files, output_file):
@@ -32,6 +32,7 @@ while True:
 otherwise, write "I am done") \n')
 
     # check for the .pdf in the input
+    new_file = new_file.strip().replace('\\', '')
     if '.pdf' not in new_file.lower():
         new_file += '.pdf'
 
