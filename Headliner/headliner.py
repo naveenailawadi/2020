@@ -94,7 +94,11 @@ class Scraper:
 
     def grab_headlines(self, site, tags):
         # find websites
-        site_raw = requests.get(site)
+        try:
+            site_raw = requests.get(site)
+        except ConnectionError:
+            print(f"Could not connect to {site}")
+            return []
         site_soup = bs(site_raw.text, "html.parser")
 
         # finds headlines
@@ -110,8 +114,10 @@ class Scraper:
             headlines.remove(test)
             test = next(iter(headlines))
 
-        if not ('https://' in test):
-            headlines = {f"{site}{headline}" for headline in headlines}
+        headlines = {headline for headline in headlines if headline}
+
+        headlines = {
+            f"{site}{headline}" for headline in headlines if (not ('http' in headline[:10]))}
 
         print(f"Found {len(headlines)} headlines on {site}")
         return headlines
@@ -150,14 +156,15 @@ class Scraper:
         # remove headlines with nonetypes in them
         exportable = []
         for headline in headlines:
-            if not ('None' == headline.split('/')[-1].strip()):
+            if not ('None' in headline):
                 exportable.append(headline)
 
         # make sure that the shuffled versions are evenly distributed across sources
         selections = headlines[:max_count]
-        sources = {headline.split('.')[1] for headline in headlines}
+        potential_sources = {headline.split('.')[1] for headline in headlines}
+        sources = {}
 
-        while (len(sources) < len(WEBSITES)) and (len(selections) > len(WEBSITES)):
+        while (len(sources) < len(potential_sources)) and (len(selections) > len(potential_sources)):
             random.shuffle(headlines)
             selections = headlines[:max_count]
             sources = {headline.split('.')[1] for headline in selections}
