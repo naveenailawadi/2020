@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as bs
 import requests
 from jinja2 import Template
-from datetime import datetime as dt
 from multiprocessing import Pool
 import random
 import os
@@ -9,10 +8,10 @@ import os
 WEBSITES = [('https://www.washingtonpost.com', ['h1', 'h2']), ('https://www.nytimes.com', ['article']),
             ('https://www.economist.com', ['h3'])]
 MAX_PROCESSES = os.cpu_count() * 2
+DEFAULT_FOLDER = 'News'
+
 
 # create a class that handles html and turns them into documents
-
-
 class Article:
     def __init__(self, raw_html, source):
         self.source = source
@@ -37,10 +36,10 @@ class Exporter:
     def __init__(self):
         self.css = open('layout.css', 'r').read()
         self.template = Template(open('layout.html', 'r').read())
+        self.main_dir = os.getcwd()
 
-    def create_folder(self):
-        today = dt.now()
-        self.folder = f"News {today.month}-{today.day}-{today.year}"
+    def create_folder(self, folder=DEFAULT_FOLDER):
+        self.folder = folder
 
         try:
             os.mkdir(self.folder)
@@ -54,7 +53,10 @@ class Exporter:
         with open('main.css', 'w') as outfile:
             outfile.write(self.css)
 
+        os.chdir(self.main_dir)
+
     def add_article(self, article):
+        os.chdir(self.folder)
         # handle if there is no folder
         if not self.folder:
             print('Folder must be added before adding a document!')
@@ -63,10 +65,12 @@ class Exporter:
         # add the document as html
         filename = f"{article.title.replace('/', ' - ')} - ({article.source}).html"
         with open(filename, 'w') as outfile:
-            html_doc = self.template.render(title=article.title, source=article.source, body_tags=article.body_tags)
+            html_doc = self.template.render(
+                title=article.title, source=article.source, body_tags=article.body_tags)
 
             # write it all to the outfile
             outfile.write(html_doc)
+        os.chdir(self.main_dir)
 
 
 class Scraper:
@@ -122,7 +126,8 @@ class Scraper:
     # add this many random articles by getting all the headlines and exporting a random selection
     def grab_random(self, max_count):
         with Pool(MAX_PROCESSES) as pool:
-            headlines = pool.starmap(self.grab_headlines, WEBSITES, chunksize=1)
+            headlines = pool.starmap(
+                self.grab_headlines, WEBSITES, chunksize=1)
 
         # flatten the set
         headlines = list(set().union(*headlines))
@@ -166,7 +171,7 @@ class Scraper:
         return articles
 
 
-def main(amount):
+def get_headlines(amount):
     # get the amount of articles inputted
     scraper = Scraper()
     exporter = Exporter()
@@ -185,7 +190,7 @@ def main(amount):
 if __name__ == '__main__':
     amount = int(input('How many articles do you want to read?\n'))
 
-    folder = main(amount)
+    folder = get_headlines(amount)
 
     print(f"Added {amount} articles to {folder}")
 
