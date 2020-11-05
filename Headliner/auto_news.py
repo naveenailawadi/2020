@@ -1,13 +1,11 @@
 from headliner import get_headlines, DEFAULT_FOLDER
 from datetime import datetime as dt
 from emailer import MailBot
-from secrets import EMAIL, PASSWORD, RECIPIENTS
+from secrets import EMAIL, PASSWORD, RECIPIENTS, ARTICLE_OUTPUT
 import schedule
 import shutil
 import time
 import os
-
-ARTICLE_OUTPUT = 10
 
 BODY = 'Enjoy your daily news!\n\n'
 
