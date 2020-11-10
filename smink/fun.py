@@ -20,8 +20,8 @@ def visit_porn():
         time.sleep(random.randint(MIN_CLICK_TIME, MAX_CLICK_TIME))
         try:
             refs = driver.find_elements_by_xpath('//a')
-            refs[0].click()
             random.shuffle(refs)
+            refs[0].click()
         except Exception as e:
             print(e)
             break
