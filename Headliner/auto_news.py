@@ -18,7 +18,7 @@ DAYS = ['monday', 'tuesday', 'wednesday',
 # make a main function to run
 def main(output=ARTICLE_OUTPUT):
     today = dt.now()
-    print(f"Sending news for {today.month}-{today}")
+    print(f"\nSending news for {today.month}-{today}")
     # clear the folder
     if os.path.exists(DEFAULT_FOLDER):
         shutil.rmtree(DEFAULT_FOLDER)
