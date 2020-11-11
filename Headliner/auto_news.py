@@ -10,7 +10,7 @@ import os
 BODY = 'Enjoy your daily news!\n\n'
 
 # set schedule
-RATES_SEND_TIME = '07:00'
+RATES_SEND_TIME = '05:15'
 DAYS = ['monday', 'tuesday', 'wednesday',
         'thursday', 'friday', 'saturday', 'sunday']
 

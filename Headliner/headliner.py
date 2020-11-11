@@ -106,21 +106,18 @@ class Scraper:
 
         headlines = {self.href_extractor(headline) for headline in titles}
 
-        # check if the website is in the title yet
-        test = next(iter(headlines))
-
-        # handle for a nonetype test
-        while not test:
-            headlines.remove(test)
-            test = next(iter(headlines))
-
-        headlines = {headline for headline in headlines if headline}
-
         headlines = {
-            f"{site}{headline}" for headline in headlines if (not ('http' in headline[:10]))}
+            self.format_headline(headline, site) for headline in headlines if headline}
 
-        print(f"Found {len(headlines)} headlines on {site}")
         return headlines
+
+    def format_headline(self, headline, site):
+        if not ('http' in headline[:10]):
+            formatted_headline = f"{site}{headline}"
+        else:
+            formatted_headline = headline
+
+        return formatted_headline
 
     def href_extractor(self, tag):
         try:
