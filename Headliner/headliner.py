@@ -20,7 +20,10 @@ class Article:
         soup = bs(raw_html, 'html.parser')
 
         # get the source and headline
-        self.title = soup.find('h1').text
+        try:
+            self.title = soup.find('h1').text
+        except AttributeError:
+            self.title = ''
 
         # figure out the type of tags that the document carries for paragraphs
         # do this by comparing the length of them
