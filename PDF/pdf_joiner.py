@@ -2,6 +2,8 @@ try:
     from PyPDF2 import PdfFileReader, PdfFileWriter
 except ImportError:
     from PyPdf import PdfFileReader, PdfFileWriter
+import os
+import sys
 
 
 def pdf_cat(input_files, output_file):
@@ -24,29 +26,14 @@ def pdf_cat(input_files, output_file):
         for f in input_streams:
             f.close()
 
+if __name__ == "__main__":
+    # get the new directory name
+    directory_name = sys.argv[1]
 
-input_files = []
+    # get the files from an inputed directory
+    input_files = [f"{directory_name}/{file}" for file in os.listdir(directory_name) if ".pdf" in file]
 
-while True:
-    new_file = input('Enter a file that you want to join below: \n\
-otherwise, write "I am done") \n')
+    # get a new file name
+    new_file_name = sys.argv[2]
 
-    # check for the .pdf in the input
-    new_file = new_file.strip().replace('\\', '')
-    if '.pdf' not in new_file.lower():
-        new_file += '.pdf'
-
-    # create a breaking method
-    if "i am done" in new_file.lower():
-        break
-    elif new_file in input_files:
-        print('You have already selected that file.')
-    else:
-        input_files.append(new_file)
-    print('\n')
-
-new_file_name = input('What would you like to call your new file? \n')
-if '.pdf' not in new_file_name.lower():
-    new_file_name += '.pdf'
-
-pdf_cat(input_files, new_file_name)
+    pdf_cat(input_files, new_file_name)
